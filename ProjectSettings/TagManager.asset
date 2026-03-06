@@ -38,11 +38,26 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: bg 1
+    uniqueID: 257071103
+    locked: 0
+  - name: bg 2
+    uniqueID: 3898478331
+    locked: 0
+  - name: bg 3
+    uniqueID: 46593967
+    locked: 0
+  - name: bg 4
+    uniqueID: 2311699883
+    locked: 0
+  - name: bg 5
+    uniqueID: 524724851
+    locked: 0
+  - name: floor
+    uniqueID: 413416983
+    locked: 0
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: shadow
-    uniqueID: 524724851
     locked: 0
   - name: player
     uniqueID: 1822308211

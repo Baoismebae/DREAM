@@ -6,21 +6,23 @@ public class Playermovement : MonoBehaviour
     public Rigidbody2D rb;
     private SpriteRenderer sr;
     public Animator ani;
+
     Vector2 movement;
 
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-            movement.x = Input.GetAxisRaw("Horizontal");
-            movement.y = Input.GetAxisRaw("Vertical");
+        movement.x = Input.GetAxisRaw("Horizontal");
+        movement.y = Input.GetAxisRaw("Vertical");
 
-            ani.SetFloat("Horizontal", movement.x);
-            ani.SetFloat("Vertical", movement.y);
-            ani.SetFloat("Speed", movement.sqrMagnitude);
+        ani.SetFloat("Horizontal", movement.x);
+        ani.SetFloat("Vertical", movement.y);
+        ani.SetFloat("Speed", movement.magnitude);
 
         // Lật nhân vật khi đi trái phải
         if (movement.x > 0)
@@ -32,12 +34,12 @@ public class Playermovement : MonoBehaviour
             sr.flipX = true;
         }
 
-        // Sắp xếp layer theo trục Y 
+        // Sắp xếp layer theo trục Y (top-down game)
         sr.sortingOrder = (int)(-transform.position.y * 100);
     }
 
     void FixedUpdate()
     {
-        rb.linearVelocity = movement * Speed;
+        rb.linearVelocity = movement.normalized * Speed;
     }
 }

@@ -56,6 +56,9 @@ TagManager:
   - name: floor
     uniqueID: 413416983
     locked: 0
+  - name: fence
+    uniqueID: 1207709661
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

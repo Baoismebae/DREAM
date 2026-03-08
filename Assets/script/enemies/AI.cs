@@ -2,66 +2,83 @@ using UnityEngine;
 
 public class AI : MonoBehaviour
 {
-    [Header("CẤU HÌNH PHẠM VI HÌNH HỘP (BOX)")]
-    [Tooltip("Chiều rộng (X) và Chiều cao (Y) của vùng tuần tra cố định")]
-    public Vector2 patrolBoxSize;
-    public float moveSpeed;
-    public float stopDistance;
+   [Header("CẤU HÌNH PHẠM VI ĐA GIÁC (POLYGON)")]
+    public Vector2[] patrolPoints = new Vector2[] 
+    {new Vector2(-2, -2), new Vector2(2, -2), new Vector2(2, 2), new Vector2(-2, 2)};
+
+    public float moveSpeed = 2f;
+    public float stopDistance = 0.8f;
 
     [Header("THỜI GIAN NGHỈ (WANDER TIME)")]
-    public float minWaitTime;
-    public float maxWaitTime;
+    public float minWaitTime = 1f;
+    public float maxWaitTime = 3f;
 
-    [Header("CHIẾN ĐẤU")]
-    public float detectionRange;
+    [Header("CHIẾN ĐẤU CẬN CHIẾN")]
+    public float detectionRange = 5f;
+    public float attackCooldown = 1.5f; // Thời gian nghỉ giữa 2 nhát chém
     public Transform player;
     public LayerMask obstacleLayer;
 
-    // Biến điều khiển nội bộ
-    private Vector2 startPosition; // Tâm cố định của hình hộp
+    private Vector2 startPosition; 
     private Vector2 nextPoint;
     private float waitCounter;
     private bool isWaiting = false;
     private bool isChasing = false;
+    private bool isAttacking = false; // Biến khóa trạng thái tấn công
+    private Animator anim;
 
-
-    //Anim cho nhân vật
-     private Animator anim;
     void Start()
     {
-        anim = GetComponent<Animator>(); // Lấy Animator gắn trên quái
-    // ... giữ nguyên các dòng code Start cũ ...
-
-
-        // Ghi nhớ vị trí đặt Enemy ban đầu làm tâm của hình hộp tuần tra
+       anim = GetComponent<Animator>();
         startPosition = transform.position;
         
-        // Bắt đầu tại chỗ và chuẩn bị chọn điểm tuần tra mới
-        nextPoint = transform.position;
+        isWaiting = false; 
+        SetNewPatrolPoint(); 
+        
         waitCounter = Random.Range(minWaitTime, maxWaitTime);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (player == null) return;
+        // ==========================================
+        // CHỐT KHÓA TRẠNG THÁI: NGĂN TRƯỢT BĂNG KHI CHÉM
+        // ==========================================
+        if (isAttacking)
+        {
+            // Quái bị ép đứng im, không được chạy lệnh Chase hay Patrol bên dưới.
+            // Nhưng ta vẫn cho phép nó lật mặt (Flip) quay theo Player để đòn chém không bị đánh vào không khí.
+            float scaleX = Mathf.Abs(transform.localScale.x);
+            transform.localScale = new Vector3(player.position.x > transform.position.x ? scaleX : -scaleX, transform.localScale.y, transform.localScale.z);
+            
+            return; // Lệnh này bắt Unity dừng đọc code tại đây và thoát hàm Update
+        }
 
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-        // KIỂM TRA TRẠNG THÁI: Nếu thấy Player thì Chase, không thì Patrol
-        if (distanceToPlayer <= detectionRange)
+        // --- HỆ THỐNG TRẠNG THÁI BÌNH THƯỜNG ---
+
+        // 1. Đã vào sát Player -> Đứng lại và Chém
+        if (distanceToPlayer <= stopDistance)
+        {
+            isChasing = false;
+            isWaiting = true; // Chuyển sang đứng yên
+            AttackLogic();
+        }
+        // 2. Trong tầm nhìn nhưng chưa đủ gần -> Đuổi theo
+        else if (distanceToPlayer <= detectionRange)
         {
             isChasing = true;
-            isWaiting = false; // Đang đuổi theo thì không đứng nghỉ
+            isWaiting = false;
             ChasePlayer(distanceToPlayer);
         }
+        // 3. Ngoài tầm nhìn -> Về trạng thái tuần tra
         else
         {
-            if (isChasing) // Vừa mất dấu Player, quay lại tuần tra
+            if (isChasing) 
             {
                 isChasing = false;
-                isWaiting = true;
-                waitCounter = minWaitTime;
+                isWaiting = false; 
                 SetNewPatrolPoint(); 
             }
             Patrol();
@@ -70,6 +87,34 @@ public class AI : MonoBehaviour
         UpdateAnimation();
     }
 
+    // ================= LOGIC TẤN CÔNG =================
+    void AttackLogic()
+    {
+        // Luôn quay mặt về phía Player khi đang chém
+        float scaleX = Mathf.Abs(transform.localScale.x);
+        transform.localScale = new Vector3(player.position.x > transform.position.x ? scaleX : -scaleX, transform.localScale.y, transform.localScale.z);
+
+        // Nếu không vướng đòn đánh cũ thì tung đòn mới
+        if (!isAttacking)
+        {
+            StartCoroutine(AttackSequence());
+        }
+    }
+
+    System.Collections.IEnumerator AttackSequence()
+    {
+        isAttacking = true;
+
+        // Kích hoạt Animation chém
+        if (anim != null) anim.SetTrigger("MeleeAttack");
+
+        // Chờ quái chém xong và nghỉ ngơi (Cooldown)
+        yield return new WaitForSeconds(attackCooldown);
+
+        isAttacking = false; // Mở khóa để chém nhát tiếp theo
+    }
+
+    // ================= LOGIC DI CHUYỂN & TUẦN TRA (Giữ nguyên của bạn) =================
     void Patrol()
     {
         if (isWaiting)
@@ -80,12 +125,11 @@ public class AI : MonoBehaviour
                 isWaiting = false;
                 SetNewPatrolPoint();
             }
-            return; // Dừng di chuyển khi đang nghỉ
+            return;
         }
 
         MoveTowards(nextPoint);
 
-        // Nếu đã đến gần điểm đích tuần tra
         if (Vector2.Distance(transform.position, nextPoint) < 0.2f)
         {
             isWaiting = true;
@@ -95,7 +139,6 @@ public class AI : MonoBehaviour
 
     void ChasePlayer(float currentDistance)
     {
-        // Chỉ di chuyển nếu khoảng cách còn lớn hơn Stop Distance
         if (currentDistance > stopDistance)
         {
             MoveTowards(player.position);
@@ -104,88 +147,90 @@ public class AI : MonoBehaviour
 
     void MoveTowards(Vector2 target)
     {
-        // Di chuyển nhân vật
         transform.position = Vector2.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
 
-        // LẬT MẶT (FLIP): Dựa trên hướng di chuyển X
         if (target.x > transform.position.x + 0.01f)
-        {
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
         else if (target.x < transform.position.x - 0.01f)
-        {
             transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
     }
 
     void SetNewPatrolPoint()
     {
-        for (int i = 0; i < 10; i++) // Thử tìm điểm trống tối đa 10 lần
+        if (patrolPoints.Length < 3) return;
+
+        float minX = float.MaxValue, maxX = float.MinValue;
+        float minY = float.MaxValue, maxY = float.MinValue;
+        foreach (Vector2 p in patrolPoints) {
+            if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+            if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+        }
+
+        for (int i = 0; i < 20; i++)
         {
-            // Tính toán phạm vi hình hộp dựa trên startPosition
-            float halfX = patrolBoxSize.x / 2f;
-            float halfY = patrolBoxSize.y / 2f;
-
-            float randomX = Random.Range(-halfX, halfX);
-            float randomY = Random.Range(-halfY, halfY);
-
-            Vector2 randomPoint = startPosition + new Vector2(randomX, randomY);
-
-            // Kiểm tra vật cản (Raycast) để tránh chọn điểm nằm trong tường
-            Vector2 direction = (randomPoint - (Vector2)transform.position).normalized;
-            float distance = Vector2.Distance(transform.position, randomPoint);
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, distance, obstacleLayer);
-
-            if (hit.collider == null)
+            Vector2 randomPt = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
+            
+            if (IsPointInPolygon(patrolPoints, randomPt))
             {
-                nextPoint = randomPoint;
-                return;
+                Vector2 worldPt = startPosition + randomPt;
+                Vector2 dir = (worldPt - (Vector2)transform.position).normalized;
+                float dist = Vector2.Distance(transform.position, worldPt);
+                
+                if (!Physics2D.Raycast(transform.position, dir, dist, obstacleLayer))
+                {
+                    nextPoint = worldPt;
+                    return;
+                }
             }
         }
-        // Nếu kẹt quá không tìm được điểm, quay về tâm cho an toàn
-        nextPoint = startPosition; 
+        nextPoint = startPosition;
     }
 
-    // Vẽ trực quan trong cửa sổ Scene
-    private void OnDrawGizmosSelected()
-    {
-        // Tâm hình hộp: startPosition khi Play, transform.position khi thiết kế
-        Vector3 center = Application.isPlaying ? (Vector3)startPosition : transform.position;
-
-        // Vùng BOX tuần tra (Màu xanh lá)
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(center, new Vector3(patrolBoxSize.x, patrolBoxSize.y, 0));
-
-        // Tầm phát hiện Player (Màu đỏ)
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRange);
-
-        // Điểm đích hiện tại (Màu vàng)
-        if (!isChasing && Application.isPlaying)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, nextPoint);
-            Gizmos.DrawSphere(nextPoint, 0.2f);
+    bool IsPointInPolygon(Vector2[] poly, Vector2 p) {
+        bool inside = false;
+        for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++) {
+            if (((poly[i].y > p.y) != (poly[j].y > p.y)) &&
+                (p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)) {
+                inside = !inside;
+            }
         }
+        return inside;
     }
+
     void UpdateAnimation()
     {
-    // Nếu đang chờ (Idle) hoặc đang đứng im ở Stop Distance
-    if (isWaiting)
+        if (anim == null) return;
+
+        // Quái chỉ hiện anim chạy khi không bị Wait và không bị khóa bởi trạng thái Attacking
+        bool isMoving = !isWaiting && !isAttacking;
+        
+        if (isChasing && Vector2.Distance(transform.position, player.position) <= stopDistance)
         {
-        anim.SetBool("isRunning", false);
+            isMoving = false;
         }
-    else if (isChasing)
+
+        anim.SetBool("isRunning", isMoving);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Vector2 center = Application.isPlaying ? startPosition : (Vector2)transform.position;
+        
+        Gizmos.color = Color.green;
+        if (patrolPoints != null && patrolPoints.Length > 1)
         {
-        float distance = Vector2.Distance(transform.position, player.position);
-        // Nếu đang dí nhưng bị chặn bởi Stop Distance thì đứng yên
-        anim.SetBool("isRunning", distance > stopDistance);
+            for (int i = 0; i < patrolPoints.Length; i++)
+            {
+                Vector2 p1 = center + patrolPoints[i];
+                Vector2 p2 = center + patrolPoints[(i + 1) % patrolPoints.Length];
+                Gizmos.DrawLine(p1, p2);
+            }
         }
-    else
-        {
-        // Nếu không chờ, không dí đứng im thì chắc chắn đang đi tuần
-        anim.SetBool("isRunning", true);
-        }
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, stopDistance); // Thêm vòng tròn báo tầm chém
     }
 }
 

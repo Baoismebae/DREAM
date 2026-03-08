@@ -39,7 +39,15 @@ public class Playermovement : MonoBehaviour
     }
 
     void FixedUpdate()
+{
+    if (movement.sqrMagnitude > 0.01f) 
     {
         rb.linearVelocity = movement.normalized * Speed;
     }
+    else 
+    {
+        // Thay vì gán = Vector2.zero ngay, hãy dùng Lerp để giảm tốc mượt hơn
+        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, 0.2f); 
+    }
+}
 }

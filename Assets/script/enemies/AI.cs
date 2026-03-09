@@ -14,6 +14,7 @@ public class AI : MonoBehaviour
     public float maxWaitTime = 3f;
 
     [Header("CHIẾN ĐẤU CẬN CHIẾN")]
+    public float enemyDamage = 10f; // Chỉnh damage
     public float detectionRange = 5f;
     public float attackCooldown = 1.5f; // Thời gian nghỉ giữa 2 nhát chém
     public Transform player;
@@ -32,6 +33,14 @@ public class AI : MonoBehaviour
        anim = GetComponent<Animator>();
         startPosition = transform.position;
         
+        if (player == null)
+    {
+        GameObject targetObj = GameObject.FindGameObjectWithTag("Player");
+        if (targetObj != null) 
+        {
+            player = targetObj.transform;
+        }
+    }
         isWaiting = false; 
         SetNewPatrolPoint(); 
         
@@ -41,6 +50,7 @@ public class AI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (player == null) return;
         // ==========================================
         // CHỐT KHÓA TRẠNG THÁI: NGĂN TRƯỢT BĂNG KHI CHÉM
         // ==========================================
@@ -107,6 +117,13 @@ public class AI : MonoBehaviour
 
         // Kích hoạt Animation chém
         if (anim != null) anim.SetTrigger("MeleeAttack");
+
+        yield return new WaitForSeconds(0.3f);
+        float distance = Vector2.Distance(transform.position, player.position);
+        if (distance <= stopDistance)
+    {
+            player.GetComponent<Health>().TakeDamage(enemyDamage); 
+    }
 
         // Chờ quái chém xong và nghỉ ngơi (Cooldown)
         yield return new WaitForSeconds(attackCooldown);

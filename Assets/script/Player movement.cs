@@ -33,9 +33,12 @@ public class Playermovement : MonoBehaviour
         {
             sr.flipX = true;
         }
-
+    }
+    void LateUpdate()
+    {
         // Sắp xếp layer theo trục Y (top-down game)
-        sr.sortingOrder = (int)(-transform.position.y * 100);
+        sr.sortingLayerName = "Default";
+        sr.sortingOrder = (int)(-transform.position.y * 1000);
     }
 
     void FixedUpdate()

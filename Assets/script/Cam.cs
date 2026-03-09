@@ -9,7 +9,16 @@ public class Cam : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+    // Nếu ô Player đang trống (do mình vừa xóa nhân vật ở Map 2)
+    if (player == null)
+    {
+        // Tự động tìm con Mage chính thông qua Tag
+        GameObject mage = GameObject.FindGameObjectWithTag("Player");
+        if (mage != null)
+        {
+            player = mage.transform; // Gán lại mục tiêu cho AI
+        }
+    }    
     }
 
     // Update is called once per frame

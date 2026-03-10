@@ -55,20 +55,41 @@ public class PlayerAttack : MonoBehaviour
 
     void Attack()
     {
-        // 1. Kích hoạt Animation
+        // 1. Kích hoạt Animation chém của Player
         if (ani != null) ani.SetTrigger("Attack");
 
-        // 2. Tạo một vòng tròn ảo để kiểm tra va chạm với quái
+        // 2. Tạo vòng tròn ảo để quét trúng quái
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
 
-        // 3. Gây sát thương lên từng quái trúng đòn
+        // 3. Xử lý sát thương
         foreach (Collider2D enemy in hitEnemies)
         {
-            Health enemyHealth = enemy.GetComponent<Health>();
-            if (enemyHealth != null)
+            // DÙNG GetComponentInParent: Bắt buộc dùng cái này để thanh kiếm tự mò lên Object cha 
+            // tìm script AI (phòng khi bạn gắn Collider ở Object con chứa hình ảnh)
+            
+            ShootingAI rangedEnemy = enemy.GetComponentInParent<ShootingAI>();
+            AI meleeEnemy = enemy.GetComponentInParent<AI>();
+
+            if (rangedEnemy != null)
             {
-                enemyHealth.TakeDamage(damage);
-                Debug.Log("Đã chém " + enemy.name + " mất " + damage + " máu!");
+                rangedEnemy.TakeDamage(damage); 
+                Debug.Log("Đã chém quái tầm xa mất " + damage + " máu!");
+            }
+            else if (meleeEnemy != null)
+            {
+                meleeEnemy.TakeDamage(damage); 
+                Debug.Log("Đã chém quái cận chiến mất " + damage + " máu!");
+            }
+            else
+            {
+                // Dòng này phòng hờ bạn chém trúng các vật thể phụ (như thùng gỗ, trụ đá...)
+                // vẫn đang xài script Health cũ
+                Health genericHealth = enemy.GetComponentInParent<Health>();
+                if (genericHealth != null)
+                {
+                    genericHealth.TakeDamage(damage);
+                    Debug.Log("Đã chém trúng vật thể mất " + damage + " máu!");
+                }
             }
         }
     }

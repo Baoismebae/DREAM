@@ -1,8 +1,8 @@
 using UnityEngine;
-
+using UnityEngine.UI;
 public class AI : MonoBehaviour
 {
-   [Header("CẤU HÌNH PHẠM VI ĐA GIÁC (POLYGON)")]
+  [Header("CẤU HÌNH PHẠM VI ĐA GIÁC (POLYGON)")]
     public Vector2[] patrolPoints = new Vector2[] 
     {new Vector2(-2, -2), new Vector2(2, -2), new Vector2(2, 2), new Vector2(-2, 2)};
 
@@ -14,75 +14,81 @@ public class AI : MonoBehaviour
     public float maxWaitTime = 3f;
 
     [Header("CHIẾN ĐẤU CẬN CHIẾN")]
-    public float enemyDamage = 10f; // Chỉnh damage
+    public float enemyDamage = 10f; 
     public float detectionRange = 5f;
-    public float attackCooldown = 1.5f; // Thời gian nghỉ giữa 2 nhát chém
+    public float attackCooldown = 1.5f; 
     public Transform player;
     public LayerMask obstacleLayer;
+
+    [Header("MÁU & BỊ THƯƠNG")]
+    public float maxHealth = 50f;
+    private float currentHealth;
+    private bool isDead = false;
+    public Slider healthSlider; 
+    private Vector3 healthBarScale; 
 
     private Vector2 startPosition; 
     private Vector2 nextPoint;
     private float waitCounter;
     private bool isWaiting = false;
     private bool isChasing = false;
-    private bool isAttacking = false; // Biến khóa trạng thái tấn công
+    private bool isAttacking = false; 
     private Animator anim;
 
     void Start()
     {
-       anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
         startPosition = transform.position;
         
-        if (player == null)
-    {
-        GameObject targetObj = GameObject.FindGameObjectWithTag("Player");
-        if (targetObj != null) 
+        // --- SETUP MÁU & THANH MÁU ---
+        currentHealth = maxHealth;
+        if (healthSlider != null)
         {
-            player = targetObj.transform;
+            healthSlider.maxValue = maxHealth; 
+            healthSlider.value = currentHealth; 
+            healthBarScale = healthSlider.transform.localScale; 
         }
-    }
+        
+        if (player == null)
+        {
+            GameObject targetObj = GameObject.FindGameObjectWithTag("Player");
+            if (targetObj != null) player = targetObj.transform;
+        }
+
         isWaiting = false; 
         SetNewPatrolPoint(); 
-        
         waitCounter = Random.Range(minWaitTime, maxWaitTime);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (player == null) return;
-        // ==========================================
-        // CHỐT KHÓA TRẠNG THÁI: NGĂN TRƯỢT BĂNG KHI CHÉM
-        // ==========================================
+        if (isDead || player == null) return;
+
+        // Nếu đang trong quá trình chém -> KHÓA ĐỨNG IM
         if (isAttacking)
         {
-            // Quái bị ép đứng im, không được chạy lệnh Chase hay Patrol bên dưới.
-            // Nhưng ta vẫn cho phép nó lật mặt (Flip) quay theo Player để đòn chém không bị đánh vào không khí.
             float scaleX = Mathf.Abs(transform.localScale.x);
             transform.localScale = new Vector3(player.position.x > transform.position.x ? scaleX : -scaleX, transform.localScale.y, transform.localScale.z);
-            
-            return; // Lệnh này bắt Unity dừng đọc code tại đây và thoát hàm Update
+            return; 
         }
 
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-        // --- HỆ THỐNG TRẠNG THÁI BÌNH THƯỜNG ---
-
-        // 1. Đã vào sát Player -> Đứng lại và Chém
+        // 1. Gần sát Player -> Đứng lại & Chém
         if (distanceToPlayer <= stopDistance)
         {
             isChasing = false;
-            isWaiting = true; // Chuyển sang đứng yên
+            isWaiting = true; 
             AttackLogic();
         }
-        // 2. Trong tầm nhìn nhưng chưa đủ gần -> Đuổi theo
+        // 2. Thấy Player nhưng còn xa -> Đuổi theo
         else if (distanceToPlayer <= detectionRange)
         {
             isChasing = true;
             isWaiting = false;
             ChasePlayer(distanceToPlayer);
         }
-        // 3. Ngoài tầm nhìn -> Về trạng thái tuần tra
+        // 3. Ngoài tầm nhìn -> Tuần tra
         else
         {
             if (isChasing) 
@@ -97,14 +103,43 @@ public class AI : MonoBehaviour
         UpdateAnimation();
     }
 
+    // ================= LOGIC NHẬN SÁT THƯƠNG =================
+    public void TakeDamage(float damageAmount)
+    {
+        if (isDead) return;
+
+        currentHealth -= damageAmount;
+        
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
+        
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+        else
+        {
+            if (anim != null) anim.SetTrigger("Hurt");
+        }
+    }
+
+    void Die()
+    {
+        isDead = true;
+        if (anim != null) anim.SetBool("isDead", true);
+        GetComponent<Collider2D>().enabled = false;
+        if (healthSlider != null) healthSlider.gameObject.SetActive(false);
+        Destroy(gameObject, 1.375f); 
+    }
+
     // ================= LOGIC TẤN CÔNG =================
     void AttackLogic()
     {
-        // Luôn quay mặt về phía Player khi đang chém
         float scaleX = Mathf.Abs(transform.localScale.x);
         transform.localScale = new Vector3(player.position.x > transform.position.x ? scaleX : -scaleX, transform.localScale.y, transform.localScale.z);
 
-        // Nếu không vướng đòn đánh cũ thì tung đòn mới
         if (!isAttacking)
         {
             StartCoroutine(AttackSequence());
@@ -114,24 +149,27 @@ public class AI : MonoBehaviour
     System.Collections.IEnumerator AttackSequence()
     {
         isAttacking = true;
-
-        // Kích hoạt Animation chém
+        
+        // Gọi Trigger Attack
         if (anim != null) anim.SetTrigger("MeleeAttack");
 
         yield return new WaitForSeconds(0.3f);
-        float distance = Vector2.Distance(transform.position, player.position);
-        if (distance <= stopDistance)
-    {
-            player.GetComponent<Health>().TakeDamage(enemyDamage); 
-    }
+        
+        if (!isDead) 
+        {
+            float distance = Vector2.Distance(transform.position, player.position);
+            if (distance <= stopDistance)
+            {
+                Health playerHealth = player.GetComponent<Health>();
+                if (playerHealth != null) playerHealth.TakeDamage(enemyDamage); 
+            }
+        }
 
-        // Chờ quái chém xong và nghỉ ngơi (Cooldown)
         yield return new WaitForSeconds(attackCooldown);
-
-        isAttacking = false; // Mở khóa để chém nhát tiếp theo
+        isAttacking = false; 
     }
 
-    // ================= LOGIC DI CHUYỂN & TUẦN TRA (Giữ nguyên của bạn) =================
+    // ================= LOGIC DI CHUYỂN =================
     void Patrol()
     {
         if (isWaiting)
@@ -172,8 +210,7 @@ public class AI : MonoBehaviour
             transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
     }
 
-    void SetNewPatrolPoint()
-    {
+    void SetNewPatrolPoint() { /* Giữ nguyên của bạn */
         if (patrolPoints.Length < 3) return;
 
         float minX = float.MaxValue, maxX = float.MinValue;
@@ -202,8 +239,7 @@ public class AI : MonoBehaviour
         }
         nextPoint = startPosition;
     }
-
-    bool IsPointInPolygon(Vector2[] poly, Vector2 p) {
+    bool IsPointInPolygon(Vector2[] poly, Vector2 p) { /* Giữ nguyên của bạn */
         bool inside = false;
         for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++) {
             if (((poly[i].y > p.y) != (poly[j].y > p.y)) &&
@@ -214,25 +250,42 @@ public class AI : MonoBehaviour
         return inside;
     }
 
+    // ================= XỬ LÝ ANIMATION (ĐÃ CẬP NHẬT) =================
     void UpdateAnimation()
     {
         if (anim == null) return;
 
-        // Quái chỉ hiện anim chạy khi không bị Wait và không bị khóa bởi trạng thái Attacking
-        bool isMoving = !isWaiting && !isAttacking;
-        
+        // Nếu quái đang đứng chờ ở điểm tuần tra -> Chắc chắn là Idle
+        if (isWaiting)
+        {
+            anim.SetBool("isRunning", false);
+        }
+        // Nếu quái đang di chuyển (đi tuần hoặc đuổi theo) -> Chắc chắn là Run
+        else if (!isAttacking) 
+        {
+            anim.SetBool("isRunning", true);
+        }
+        // Nếu quái đang ở sát Player (chuẩn bị chém) -> Dừng Run
         if (isChasing && Vector2.Distance(transform.position, player.position) <= stopDistance)
         {
-            isMoving = false;
+            anim.SetBool("isRunning", false);
         }
-
-        anim.SetBool("isRunning", isMoving);
     }
 
-    private void OnDrawGizmosSelected()
+    void LateUpdate()
     {
+        if (healthSlider != null)
+        {
+            healthSlider.transform.localScale = new Vector3(
+                healthBarScale.x * Mathf.Sign(transform.localScale.x),
+                healthBarScale.y,
+                healthBarScale.z
+            );
+        }
+    }
+
+    private void OnDrawGizmosSelected() { /* Giữ nguyên của bạn */
         Vector2 center = Application.isPlaying ? startPosition : (Vector2)transform.position;
-        
         Gizmos.color = Color.green;
         if (patrolPoints != null && patrolPoints.Length > 1)
         {
@@ -243,11 +296,10 @@ public class AI : MonoBehaviour
                 Gizmos.DrawLine(p1, p2);
             }
         }
-
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, stopDistance); // Thêm vòng tròn báo tầm chém
+        Gizmos.DrawWireSphere(transform.position, stopDistance);
     }
 }
 

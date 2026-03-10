@@ -1,26 +1,36 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ShootingAI : MonoBehaviour
 {
-    [Header("CẤU HÌNH TUẦN TRA")]
+   [Header("CẤU HÌNH TUẦN TRA")]
     public Vector2[] patrolPoints = new Vector2[] { new Vector2(-2, -2), new Vector2(2, -2) };
-    public float moveSpeed;
-    public float stopDistance;
+    public float moveSpeed = 3f;
+    public float stopDistance = 0.8f;
 
     [Header("CHIẾN ĐẤU")]
-    public float detectionRange;
-    public float shootingRange; 
-    public float fireRate = 1f; 
+    public float shootingRange = 10f; 
+    public float fireRate = 1.5f; // Thời gian đứng im (idle) chờ ở mỗi chu kỳ bắn
     public float minWaitTime = 1f;
     public float maxWaitTime = 3f;
 
+    [Header("CHIẾN ĐẤU TẦM XA")]
+    public float detectionRange = 15f;
     public GameObject bullet;
     public GameObject bulletParent; 
     public Transform player;
 
+    [Header("MÁU & BỊ THƯƠNG")]
+    public UnityEngine.UI.Slider healthSlider;
+    private Vector3 healthBarScale;
+    public float maxHealth = 30f;
+    private float currentHealth;
+    private bool isDead = false;
+
     [Header("ANIMATION BẮN")]
-    public float chargeTime = 0.5f; // Thời gian gồng trước khi đạn bay ra (giây)
-    private bool isShootingAction = false; // Biến khóa: Đảm bảo quái không bị bắn chồng chéo
+    public float chargeTime = 1f; 
+    private bool isShootingAction = false; 
+
 
     private Vector2 startPosition; 
     private Vector2 nextPoint;
@@ -28,35 +38,47 @@ public class ShootingAI : MonoBehaviour
     private bool isWaiting = false;
     private bool isChasing = false;
     private Animator anim;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
-        anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
         startPosition = transform.position;
+        currentHealth = maxHealth;
+
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth; 
+            healthSlider.value = currentHealth; 
+            healthBarScale = healthSlider.transform.localScale; 
+        }
+
+        if (player == null)
+        {
+            GameObject targetObj = GameObject.FindGameObjectWithTag("Player");
+            if (targetObj != null) player = targetObj.transform;
+            
+        }
         SetNewPatrolPoint();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (player == null) return;
+        if (isDead || player == null) return;
+
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-        // TRẠNG THÁI 1: Trong tầm bắn -> Đứng yên và Bắn
+
         if (distanceToPlayer <= shootingRange)
         {
-            if (!isWaiting) 
             isChasing = false;
             isWaiting = true; 
-            ShootLogic(); // Hàm này đã chứa Instantiate và Cooldown
+            ShootLogic(); 
         }
-        // TRẠNG THÁI 2: Ngoài tầm bắn nhưng trong tầm nhìn -> Đuổi theo
         else if (distanceToPlayer <= detectionRange)
         {
             isChasing = true;
             isWaiting = false;
             ChasePlayer(distanceToPlayer);
         }
-        // TRẠNG THÁI 3: Ngoài tầm nhìn -> Đi tuần
         else
         {
             if (isChasing) 
@@ -67,49 +89,64 @@ public class ShootingAI : MonoBehaviour
             }
             Patrol();
         }
-
-        UpdateAnimation();
     }
 
-    // --- CÁC HÀM NÀY PHẢI NẰM RIÊNG BIỆT ---
+    public void TakeDamage(float damageAmount)
+    {
+        if (isDead) return;
+        currentHealth -= damageAmount;
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
+        
+        if (anim != null) anim.SetTrigger("Hurt");
+        
+        if (currentHealth <= 0) Die();
+    }
+
+    void Die()
+    {
+        isDead = true;
+        if (anim != null) anim.SetBool("isDead", true);
+        GetComponent<Collider2D>().enabled = false;
+        Destroy(gameObject, 1.375f);
+    }
 
     void ShootLogic() 
     {
-       // Lật mặt quái (Luôn nhìn theo Player dù đang đứng im)
         float scaleX = Mathf.Abs(transform.localScale.x);
         transform.localScale = new Vector3(player.position.x > transform.position.x ? scaleX : -scaleX, transform.localScale.y, transform.localScale.z);
 
-        // Chỉ cho phép gọi chu trình bắn mới khi đã hoàn thành xong chu trình cũ (gồng + bắn + nghỉ)
         if (!isShootingAction) 
         {
             StartCoroutine(ShootSequence()); 
         }
     }
 
-    // CHU TRÌNH: GỒNG -> BẮN -> NGHỈ IDLE
     System.Collections.IEnumerator ShootSequence()
     {
-        // 1. KHÓA BÒNG LẶP: Đánh dấu là đang bận xử lý bắn
         isShootingAction = true;
 
-        // 2. GỒNG (Phát Animation Tấn công)
-        if (anim != null) anim.SetTrigger("Attack");
+        // 1. Chuyển từ Idle sang Charge
+        if (anim != null) anim.SetBool("isCharging", true);
 
-        // --- Đợi quái múa súng xong (Thời gian gồng) ---
+        // 2. Chờ thời gian gồng (chargeTime)
         yield return new WaitForSeconds(chargeTime); 
 
-        // 3. BẮN (Sinh ra viên đạn)
-        if (bullet != null) 
+        // 3. Tạo đạn bay ra
+        if (bullet != null && !isDead) 
         {
             Vector2 spawnPos = (bulletParent != null) ? (Vector2)bulletParent.transform.position : (Vector2)transform.position;
             Instantiate(bullet, spawnPos, Quaternion.identity);
         }
 
-        // 4. NGHỈ NGƠI CHỜ COOLDOWN (Quay lại Idle 1 khoảng thời gian)
-        // Lúc này biến fireRate sẽ đóng vai trò là "thời gian đứng chơi" sau khi bắn
+        // 4. Bắn xong thì tắt Charge -> Animator sẽ tự động quay về Idle
+        if (anim != null) anim.SetBool("isCharging", false);
+
+        // 5. Đứng nghỉ một lúc (Idle) theo biến fireRate rồi mới bắn tiếp
         yield return new WaitForSeconds(fireRate);
 
-        // 5. MỞ KHÓA: Cho phép quái gồng và bắn phát tiếp theo
         isShootingAction = false;
     }
 
@@ -122,6 +159,12 @@ public class ShootingAI : MonoBehaviour
             return;
         }
         transform.position = Vector2.MoveTowards(transform.position, nextPoint, moveSpeed * Time.deltaTime);
+
+        if (nextPoint.x > transform.position.x + 0.01f)
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        else if (nextPoint.x < transform.position.x - 0.01f)
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+
         if (Vector2.Distance(transform.position, nextPoint) < 0.2f) 
         {
             isWaiting = true;
@@ -131,7 +174,12 @@ public class ShootingAI : MonoBehaviour
 
     void ChasePlayer(float d) 
     { 
-        if (d > stopDistance) transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime); 
+        if (d > stopDistance) 
+        {
+            transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime); 
+            float scaleX = Mathf.Abs(transform.localScale.x);
+            transform.localScale = new Vector3(player.position.x > transform.position.x ? scaleX : -scaleX, transform.localScale.y, transform.localScale.z);
+        }
     }
 
     void SetNewPatrolPoint() 
@@ -140,39 +188,16 @@ public class ShootingAI : MonoBehaviour
         nextPoint = startPosition + patrolPoints[Random.Range(0, patrolPoints.Length)];
     }
 
-    void UpdateAnimation() 
+    void LateUpdate()
     {
-        if (anim != null) anim.SetBool("isRunning", !isWaiting);
-    }
-
-    // Hàm này vẽ các đường hỗ trợ chỉ khi bạn Click chọn con Quái trong Hierarchy
-    private void OnDrawGizmosSelected()
-    {
-        // 1. Xác định tâm của vùng tuần tra
-        // Khi đang chạy game thì dùng startPosition, khi đang Edit thì dùng vị trí hiện tại
-        Vector2 center = Application.isPlaying ? startPosition : (Vector2)transform.position;
-
-        // 2. Vẽ đường nối các điểm Patrol (Màu Xanh Lá)
-        if (patrolPoints != null && patrolPoints.Length > 0)
+        if (healthSlider != null)
         {
-            Gizmos.color = Color.green;
-            for (int i = 0; i < patrolPoints.Length; i++)
-            {
-                Vector2 p1 = center + patrolPoints[i];
-                // Lấy điểm tiếp theo (nối điểm cuối về điểm đầu để tạo thành vòng kín)
-                Vector2 p2 = center + patrolPoints[(i + 1) % patrolPoints.Length];
-
-                Gizmos.DrawLine(p1, p2); // Vẽ đường nối
-                Gizmos.DrawSphere(p1, 0.1f); // Vẽ nốt chấm tại mỗi điểm
-            }
+            // Ép thanh máu luôn hiển thị đúng chiều dương, bất kể quái quay đi đâu
+            healthSlider.transform.localScale = new Vector3(
+                healthBarScale.x * Mathf.Sign(transform.localScale.x),
+                healthBarScale.y,
+                healthBarScale.z
+            );
         }
-        Gizmos.color = Color.cyan;
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, shootingRange);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, stopDistance);
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRange);
-        
     }
 }

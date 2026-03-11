@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2846530d4fe99c54a9d16437cdc67da4
+guid: 687bb2c150a99e24282195498d707a0c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6968408720297168950
-    second: decors_paper5_0
+      213: -7272991010628371447
+    second: bFloor1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: decors_paper5_0
+      name: bFloor1_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 6
+        y: 0
         width: 32
-        height: 18
+        height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: acfe3f8603d3b4f90800000000000000
-      internalID: -6968408720297168950
+      spriteID: 90cf2e4b535211b90800000000000000
+      internalID: -7272991010628371447
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      decors_paper5_0: -6968408720297168950
+      bFloor1_0: -7272991010628371447
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

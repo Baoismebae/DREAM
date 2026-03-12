@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d54951b7b842b594c99e5d33e5934234
+guid: 01ce608d0e8c11b4bad9b308636bf8ec
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2047493095931570908
-    second: prop-planet-small_0
+      213: -4093620233156422854
+    second: Layer 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: prop-planet-small_0
+      name: Layer 1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 16
-        height: 16
+        width: 272
+        height: 160
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cdae0176f182a6c10800000000000000
-      internalID: 2047493095931570908
+      spriteID: a331c5d361a8037c0800000000000000
+      internalID: -4093620233156422854
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      prop-planet-small_0: 2047493095931570908
+      Layer 1_0: -4093620233156422854
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

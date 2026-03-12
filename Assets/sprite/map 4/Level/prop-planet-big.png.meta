@@ -5,6 +5,9 @@ TextureImporter:
   - first:
       213: -8569949491023959239
     second: prop-planet-big_0
+  - first:
+      213: 2512201276867515590
+    second: prop-planet-big_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -105,8 +108,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 43
-        height: 43
+        width: 95
+        height: 160
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -117,6 +120,28 @@ TextureImporter:
       bones: []
       spriteID: 93b2a7ce75c611980800000000000000
       internalID: -8569949491023959239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop-planet-big_1
+      rect:
+        serializedVersion: 2
+        x: 241
+        y: 0
+        width: 31
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c498f740c12dd220800000000000000
+      internalID: 2512201276867515590
       vertices: []
       indices: 
       edges: []
@@ -136,6 +161,7 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       prop-planet-big_0: -8569949491023959239
+      prop-planet-big_1: 2512201276867515590
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

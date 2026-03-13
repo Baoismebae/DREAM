@@ -40,10 +40,12 @@ public class BossAI : MonoBehaviour
 
     private Transform player;
     private Animator anim;
+    private SpriteRenderer sr;
 
     void Start()
     {
         anim = GetComponentInChildren<Animator>();
+        sr = GetComponentInChildren<SpriteRenderer>();
         
         // --- SETUP MÁU & THANH MÁU ---
         currentHealth = maxHealth;
@@ -126,7 +128,7 @@ public class BossAI : MonoBehaviour
         float dashTimer = 0f;
         float dashTimeout = 2.5f; // Tối đa 2.5 giây để lướt. Chạy không kịp cũng phải đứng lại bắn!
 
-        if (anim != null) anim.SetBool("isRunning", true);
+        if (anim != null) anim.SetBool("isFlying", true);
 
         // Thêm điều kiện dashTimer < dashTimeout vào vòng lặp
         while (Vector2.Distance(transform.position, mapCenter.position) > 0.1f && dashTimer < dashTimeout)
@@ -136,7 +138,7 @@ public class BossAI : MonoBehaviour
             yield return null;
         }
 
-        if (anim != null) anim.SetBool("isRunning", false);
+        if (anim != null) anim.SetBool("isFlying", false);
 
         yield return new WaitForSeconds(0.5f);
 
@@ -191,16 +193,37 @@ public class BossAI : MonoBehaviour
 
         currentHealth -= damageAmount;
         
-        // Cập nhật Slider thanh máu
-        if (healthSlider != null)
-        {
-            healthSlider.value = currentHealth;
-        }
+        if (healthSlider != null) healthSlider.value = currentHealth;
 
         if (currentHealth <= 0)
         {
             BossDie();
         }
+        else
+        {
+            bool isMoving = false;
+            if (anim != null) 
+            {
+                isMoving = anim.GetBool("isRunning") || anim.GetBool("isFlying");
+            }
+
+            if (currentState == BossState.Idle || isMoving)
+            {
+                if (anim != null) anim.SetTrigger("Hurt");
+            }
+            else
+            {
+                // Nếu đang vung kiếm hoặc niệm phép -> Bật Giáp Bá Thể (Chỉ chớp nháy, không giật mình)
+                if (sr != null) StartCoroutine(FlashWhite());
+            }
+        }
+    }
+    IEnumerator FlashWhite()
+    {
+        sr.color = new Color(1f, 1f, 1f, 0.3f); 
+        
+        yield return new WaitForSeconds(0.1f);
+        sr.color = Color.white; 
     }
 
     void BossDie()

@@ -2,32 +2,38 @@ using UnityEngine;
 
 public class Cam : MonoBehaviour
 {
-    public Transform player;     // kéo player vào đây trong Inspector
-    public Vector3 offset;       // khoảng cách giữa camera và player
-    public float smoothSpeed;  // độ mượt khi camera di chuyển
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public Transform target;     
+    public Vector3 offset = new Vector3(0, 5.3f, -10f); // Lấy theo thông số cũ của cậu
+    public float smoothSpeed = 0.125f;
+
+    [Header("Giới hạn di chuyển (Boundaries)")]
+    public float minX, maxX;
+    public float minY, maxY;
+
     void Start()
     {
-    // Nếu ô Player đang trống (do mình vừa xóa nhân vật ở Map 2)
-    if (player == null)
-    {
-        // Tự động tìm con Mage chính thông qua Tag
-        GameObject mage = GameObject.FindGameObjectWithTag("Player");
-        if (mage != null)
+        // Tự tìm Player nếu chưa kéo vào
+        if (target == null)
         {
-            player = mage.transform; // Gán lại mục tiêu cho AI
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) target = player.transform;
         }
-    }    
     }
 
-    // Update is called once per frame
-    void Update()
+    void LateUpdate() // Dùng LateUpdate để mượt hơn khi nhân vật di chuyển
     {
-        if (player == null) return;
+        if (target == null) return;
 
-        Vector3 desiredPosition = player.position + offset;
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.position = smoothedPosition;
+        // 1. Tính toán vị trí mong muốn (có Offset)
+        Vector3 desiredPosition = target.position + offset;
+
+        // 2. Làm mượt chuyển động
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+
+        // 3. Khóa vị trí trong biên (Chỉ khóa X và Y, giữ nguyên Z của Camera)
+        float clampedX = Mathf.Clamp(smoothedPosition.x, minX, maxX);
+        float clampedY = Mathf.Clamp(smoothedPosition.y, minY, maxY);
+
+        transform.position = new Vector3(clampedX, clampedY, transform.position.z);
     }
 }

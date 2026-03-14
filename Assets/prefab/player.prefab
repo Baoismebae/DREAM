@@ -111,8 +111,8 @@ BoxCollider2D:
   m_Offset: {x: 0.014232159, y: 0.14323965}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5276052, y: 0.099723965}
-    oldSize: {x: 0.625, y: 1}
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 0.59375, y: 1.25}
     newSize: {x: 0.625, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -257,8 +257,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c4ecc24283a6114bab934642bde5241, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  maxHealth: 25
-  currentHealth: 100
+  maxHealth: 10000
+  currentHealth: 10000
   healthBar: {fileID: 1191804355694368996}
   playerMovementScript: {fileID: 877706206837866170}
   playerAttackScript: {fileID: 895873615789440638}
@@ -333,7 +333,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 206ffd2d368f65849bd53801d5c0d827, type: 3}
+  m_Sprite: {fileID: 21300000, guid: cb3c4d856b4705c46a8725d9361b8898, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

@@ -94,23 +94,33 @@ public class ShootingAI : MonoBehaviour
     public void TakeDamage(float damageAmount)
     {
         if (isDead) return;
+        
         currentHealth -= damageAmount;
         if (healthSlider != null)
         {
             healthSlider.value = currentHealth;
         }
-        
-        if (anim != null) anim.SetTrigger("Hurt");
-        
-        if (currentHealth <= 0) Die();
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+        else
+        {
+            if (anim != null) anim.SetTrigger("Hurt");
+        }
     }
 
     void Die()
     {
         isDead = true;
         if (anim != null) anim.SetBool("isDead", true);
-        GetComponent<Collider2D>().enabled = false;
-        Destroy(gameObject, 1.375f);
+        GetComponent<Collider2D>().enabled = false; // Tắt va chạm
+
+        // Ẩn thanh máu đi cho đỡ vướng mắt khi xác quái còn nằm đó
+        if (healthSlider != null) healthSlider.gameObject.SetActive(false);
+
+        Destroy(gameObject, 1.375f); //
     }
 
     void ShootLogic() 

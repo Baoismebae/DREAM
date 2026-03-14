@@ -69,8 +69,14 @@ public class PlayerAttack : MonoBehaviour
             
             ShootingAI rangedEnemy = enemy.GetComponentInParent<ShootingAI>();
             AI meleeEnemy = enemy.GetComponentInParent<AI>();
+            BossAI boss = enemy.GetComponentInParent<BossAI>();
 
-            if (rangedEnemy != null)
+            if (boss != null)
+            {
+                boss.TakeDamage(damage); 
+                Debug.Log("Đã chém trúng Boss mất " + damage + " máu!");
+            }
+            else if (rangedEnemy != null)
             {
                 rangedEnemy.TakeDamage(damage); 
                 Debug.Log("Đã chém quái tầm xa mất " + damage + " máu!");

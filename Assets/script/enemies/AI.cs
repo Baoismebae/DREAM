@@ -22,6 +22,9 @@ public class AI : MonoBehaviour
 
     [Header("MÁU & BỊ THƯƠNG")]
     public float maxHealth = 50f;
+    public GameObject coinPrefab; // Kéo Prefab đồng xu vào đây
+    public int minCoins = 1;      // Số xu tối thiểu
+    public int maxCoins = 3;      // Số xu tối đa
     private float currentHealth;
     private bool isDead = false;
     public Slider healthSlider; 
@@ -127,8 +130,30 @@ public class AI : MonoBehaviour
 
     void Die()
     {
+        if (isDead) return; // Bảo vệ để quái không chết 2 lần
         isDead = true;
+
         if (anim != null) anim.SetBool("isDead", true);
+        
+        // --- LOGIC RƠI TIỀN ---
+        if (coinPrefab != null)
+        {
+            int lootAmount = Random.Range(minCoins, maxCoins + 1);
+            for (int i = 0; i < lootAmount; i++)
+            {
+                GameObject coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);
+                
+                // Cho đồng xu văng ra ngẫu nhiên cho đẹp
+                Rigidbody2D rb = coin.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    Vector2 scatter = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
+                    rb.AddForce(scatter * 2f, ForceMode2D.Impulse);
+                }
+            }
+        }
+        // -----------------------
+
         GetComponent<Collider2D>().enabled = false;
         if (healthSlider != null) healthSlider.gameObject.SetActive(false);
         Destroy(gameObject, 1.375f); 

@@ -1,15 +1,22 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class PlayerAttack : MonoBehaviour
 {
-    [Header("THÔNG SỐ TẤN CÔNG")]
+  [Header("THÔNG SỐ TẤN CÔNG")]
     public float damage = 20f;         // Sát thương gây ra
     public float attackRange = 1.5f;   // Tầm xa của đòn đánh
     public float attackRate = 2f;      // Tốc độ đánh (số lần mỗi giây)
     private float nextAttackTime = 0f; // Thời gian chờ để đánh nhát tiếp theo
 
+    [Header("KHÓA DI CHUYỂN")]
+    public float attackDuration = 0.4f; // Thời gian đứng im khi vung kiếm
+    
+    // ĐÃ SỬA CHỮ 'm' THƯỜNG Ở ĐÂY:
+    private Playermovement movementScript; 
+
     [Header("CẤU HÌNH VA CHẠM")]
-    public Transform attackPoint;      // Điểm phát ra đòn đánh (thường đặt ở phía trước Mage)
+    public Transform attackPoint;      // Điểm phát ra đòn đánh
     public LayerMask enemyLayers;      // Chỉ định Layer nào là kẻ địch
 
     private Animator ani;
@@ -18,7 +25,9 @@ public class PlayerAttack : MonoBehaviour
     {
         ani = GetComponent<Animator>();
         
-        // Nếu quên chưa kéo attackPoint vào Inspector, hãy dùng chính vị trí Mage
+        // ĐÃ SỬA CHỮ 'm' THƯỜNG Ở ĐÂY:
+        movementScript = GetComponent<Playermovement>(); 
+        
         if (attackPoint == null) attackPoint = transform;
     }
 
@@ -26,13 +35,12 @@ public class PlayerAttack : MonoBehaviour
     {
         HandleAttackPointPosition();
 
-        // Kiểm tra phím bấm (ví dụ phím J hoặc Chuột trái) và thời gian hồi chiêu
+        // Kiểm tra phím bấm và thời gian hồi chiêu
         if (Time.time >= nextAttackTime)
         {
             if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
             {
-                Attack();
-                // Tính toán thời gian cho lần đánh kế tiếp
+                Attack(); 
                 nextAttackTime = Time.time + 1f / attackRate;
             }
         }
@@ -40,7 +48,6 @@ public class PlayerAttack : MonoBehaviour
 
     void HandleAttackPointPosition()
     {
-        // Kiểm tra hướng di chuyển từ script di chuyển hoặc từ input
         float moveX = Input.GetAxisRaw("Horizontal");
 
         if (moveX > 0) // Nhìn sang phải
@@ -55,18 +62,21 @@ public class PlayerAttack : MonoBehaviour
 
     void Attack()
     {
-        // 1. Kích hoạt Animation chém của Player
+        StartCoroutine(AttackRoutine());
+    }
+
+    IEnumerator AttackRoutine()
+    {
+        // 1. KHÓA DI CHUYỂN
+        if (movementScript != null) movementScript.isAttacking = true;
+
+        // 2. Kích hoạt Animation chém
         if (ani != null) ani.SetTrigger("Attack");
 
-        // 2. Tạo vòng tròn ảo để quét trúng quái
+        // 3. Quét quái và xử lý sát thương
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
-
-        // 3. Xử lý sát thương
         foreach (Collider2D enemy in hitEnemies)
         {
-            // DÙNG GetComponentInParent: Bắt buộc dùng cái này để thanh kiếm tự mò lên Object cha 
-            // tìm script AI (phòng khi bạn gắn Collider ở Object con chứa hình ảnh)
-            
             ShootingAI rangedEnemy = enemy.GetComponentInParent<ShootingAI>();
             AI meleeEnemy = enemy.GetComponentInParent<AI>();
             BossAI boss = enemy.GetComponentInParent<BossAI>();
@@ -88,8 +98,6 @@ public class PlayerAttack : MonoBehaviour
             }
             else
             {
-                // Dòng này phòng hờ bạn chém trúng các vật thể phụ (như thùng gỗ, trụ đá...)
-                // vẫn đang xài script Health cũ
                 Health genericHealth = enemy.GetComponentInParent<Health>();
                 if (genericHealth != null)
                 {
@@ -98,9 +106,14 @@ public class PlayerAttack : MonoBehaviour
                 }
             }
         }
+
+        // 4. CHỜ DIỄN XONG NHÁT CHÉM (Dừng lại 0.4 giây)
+        yield return new WaitForSeconds(attackDuration);
+
+        // 5. MỞ KHÓA DI CHUYỂN
+        if (movementScript != null) movementScript.isAttacking = false;
     }
 
-    // Vẽ vòng tròn đỏ trong Scene để cậu dễ căn chỉnh tầm đánh
     private void OnDrawGizmosSelected()
     {
         if (attackPoint == null) return;

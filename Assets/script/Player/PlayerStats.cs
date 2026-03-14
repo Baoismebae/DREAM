@@ -4,7 +4,13 @@ public class PlayerStats : MonoBehaviour
 {
     [Header("Cài đặt tiền tệ")]
     public int currentCoins = 0; // Số tiền hiện có
+    public static PlayerStats instance; 
 
+    void Awake()
+    {
+        // Thiết lập nam châm để mọi đồng xu đều nhìn thấy
+        instance = this;
+    }
     // Hàm này để script khác (như Coin) gọi tới khi nhặt được tiền
     public void AddCoins(int amount)
     {

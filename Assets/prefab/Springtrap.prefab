@@ -337,6 +337,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   maxHealth: 75
+  coinPrefab: {fileID: 7969977241795108594, guid: 59f114a5049f7ff4492a8f7d8d18ed36, type: 3}
+  minCoins: 2
+  maxCoins: 5
   healthSlider: {fileID: 2541250267712147133}
 --- !u!114 &3612765090466179623
 MonoBehaviour:

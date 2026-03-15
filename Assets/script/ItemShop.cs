@@ -2,56 +2,75 @@
 
 public class ItemShop : MonoBehaviour
 {
-    public enum ItemType { Health, Mana, Damage } // Danh sách loại đồ
-    
+    public enum ItemType { Health, Mana, Damage } // Các loại món đồ
+
     [Header("Cài đặt món đồ")]
-    public ItemType loaiDo; 
+    public ItemType loaiMonDo; 
     public int giaTien = 10;
-    public float giaTriTang = 20f; // Hồi bao nhiêu máu/mana hoặc tăng bao nhiêu dame
+    public float giaTriCong = 20f; // Máu/Mana hồi bao nhiêu, hoặc Dame tăng bao nhiêu
+
+    [Header("Giao diện")]
+    public GameObject thongBaoText; // Cái chữ "Nhấn E để mua"
 
     private bool isPlayerNearby = false;
 
+    void Start()
+    {
+        if(thongBaoText != null) thongBaoText.SetActive(false); // Lúc đầu ẩn thông báo đi
+    }
+
     void Update()
     {
-        // Nếu Player đứng gần và nhấn phím E (hoặc phím cậu chọn)
+        // Nếu Mage đứng gần và nhấn phím E
         if (isPlayerNearby && Input.GetKeyDown(KeyCode.E))
         {
-            BuyItem();
+            Buy();
         }
     }
 
-    void BuyItem()
+    void Buy()
     {
-        // Kiểm tra ví tiền từ PlayerStats
+        // Gọi ví tiền của Mage để kiểm tra
         if (PlayerStats.instance.SpendCoins(giaTien))
         {
-            // Nếu đủ tiền, thực hiện logic tăng chỉ số
-            switch (loaiDo)
+            // Nếu đủ tiền thì thực hiện hành động tương ứng
+            switch (loaiMonDo)
             {
                 case ItemType.Health:
-                    Debug.Log("WaiiBi đã mua Máu! + " + giaTriTang);
-                    // Gọi hàm hồi máu: PlayerHealth.instance.Heal(giaTriTang);
+                    Debug.Log("Đã hồi Máu!");
+                    // Gọi hàm hồi máu của Mage ở đây: PlayerHealth.instance.Heal(giaTriCong);
                     break;
                 case ItemType.Mana:
-                    Debug.Log("WaiiBi đã mua Mana! + " + giaTriTang);
-                    // Gọi hàm hồi mana: PlayerMana.instance.Refill(giaTriTang);
+                    Debug.Log("Đã hồi Mana!");
                     break;
                 case ItemType.Damage:
-                    Debug.Log("WaiiBi đã tăng Sức mạnh! + " + giaTriTang);
-                    // Gọi hàm tăng dame: PlayerCombat.instance.IncreaseDamage(giaTriTang);
+                    Debug.Log("Đã tăng Sức mạnh!");
                     break;
             }
         }
+        else
+        {
+            Debug.Log("WaiiBi ơi, không đủ tiền rồi!");
+        }
     }
 
-    // Kiểm tra Mage có đang đứng ở bàn không
+    // Khi Mage bước vào vùng của bàn
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player")) isPlayerNearby = true;
+        if (other.CompareTag("Player"))
+        {
+            isPlayerNearby = true;
+            if(thongBaoText != null) thongBaoText.SetActive(true);
+        }
     }
 
+    // Khi Mage đi ra xa khỏi bàn
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player")) isPlayerNearby = false;
+        if (other.CompareTag("Player"))
+        {
+            isPlayerNearby = false;
+            if(thongBaoText != null) thongBaoText.SetActive(false);
+        }
     }
 }

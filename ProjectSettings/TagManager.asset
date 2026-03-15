@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - sokobantrigger
+  - stone
+  - Crate
+  - wall
   layers:
   - Default
   - TransparentFX
@@ -14,8 +18,8 @@ TagManager:
   - enemy
   - bullet
   - player
-  - 
-  - 
+  - crate
+  - wall
   - 
   - 
   - 

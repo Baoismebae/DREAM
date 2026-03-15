@@ -130,7 +130,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 0.001
-  m_LinearDamping: 0
+  m_LinearDamping: 4.13
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -179,7 +179,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: -0.0058841705, y: 0}
-  m_Radius: 0.29523468
+  m_Radius: 0.45
 --- !u!114 &359807231357678099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +192,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 111e865937179d84490e1db584390efa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Coin
-  value: 1
-  detectDistance: 3
-  attractSpeed: 8
+  coinValue: 1
+  detectDistance: 0.8
+  attractSpeed: 2.5

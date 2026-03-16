@@ -81,6 +81,10 @@ public class Playermovement : MonoBehaviour
         {
             sr.flipX = true;  // Quay sang trái
         }
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+        Debug.Log("Tọa độ X khi vừa đổi hướng: " + transform.position.x);
+        }
     }
 
     void LateUpdate()
@@ -113,7 +117,14 @@ public class Playermovement : MonoBehaviour
         if (collision.CompareTag("Stairs"))
         {
             onHorizontalStairs = true;
-            // (Tùy chọn): Giảm tốc độ đi một chút khi leo cầu thang cho chân thực
+            
+            // 🌟 ĐIỂM MẤU CHỐT: Lấy độ dốc từ chính cái cầu thang đang dẫm lên
+            Stair currentStair = collision.GetComponent<Stair>();
+            if (currentStair != null)
+            {
+                stairSlope = currentStair.slope; // Cập nhật độ dốc mới cho Mage
+            }
+
             currentSpeed = Speed * 0.8f; 
         }
     }

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerAttack : MonoBehaviour
 {
-  [Header("THÔNG SỐ TẤN CÔNG")]
+    [Header("THÔNG SỐ TẤN CÔNG")]
     public float damage = 20f;         // Sát thương gây ra
     public float attackRange = 1.5f;   // Tầm xa của đòn đánh
     public float attackRate = 2f;      // Tốc độ đánh (số lần mỗi giây)
@@ -11,9 +11,7 @@ public class PlayerAttack : MonoBehaviour
 
     [Header("KHÓA DI CHUYỂN")]
     public float attackDuration = 0.4f; // Thời gian đứng im khi vung kiếm
-    
-    // ĐÃ SỬA CHỮ 'm' THƯỜNG Ở ĐÂY:
-    private Playermovement movementScript; 
+    private Playermovement movementScript; // Liên kết với script di chuyển
 
     [Header("CẤU HÌNH VA CHẠM")]
     public Transform attackPoint;      // Điểm phát ra đòn đánh
@@ -25,7 +23,7 @@ public class PlayerAttack : MonoBehaviour
     {
         ani = GetComponent<Animator>();
         
-        // ĐÃ SỬA CHỮ 'm' THƯỜNG Ở ĐÂY:
+        // TỰ ĐỘNG TÌM VÀ KẾT NỐI VỚI SCRIPT DI CHUYỂN
         movementScript = GetComponent<Playermovement>(); 
         
         if (attackPoint == null) attackPoint = transform;
@@ -35,7 +33,6 @@ public class PlayerAttack : MonoBehaviour
     {
         HandleAttackPointPosition();
 
-        // Kiểm tra phím bấm và thời gian hồi chiêu
         if (Time.time >= nextAttackTime)
         {
             if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
@@ -62,18 +59,19 @@ public class PlayerAttack : MonoBehaviour
 
     void Attack()
     {
+        // GỌI TIẾN TRÌNH KHÓA DI CHUYỂN
         StartCoroutine(AttackRoutine());
     }
 
     IEnumerator AttackRoutine()
     {
-        // 1. KHÓA DI CHUYỂN
+        // 1. BẬT KHÓA: Ép nhân vật đứng im
         if (movementScript != null) movementScript.isAttacking = true;
 
-        // 2. Kích hoạt Animation chém
+        // 2. Múa kiếm
         if (ani != null) ani.SetTrigger("Attack");
 
-        // 3. Quét quái và xử lý sát thương
+        // 3. Quét quái và trừ máu
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
         foreach (Collider2D enemy in hitEnemies)
         {
@@ -84,17 +82,14 @@ public class PlayerAttack : MonoBehaviour
             if (boss != null)
             {
                 boss.TakeDamage(damage); 
-                Debug.Log("Đã chém trúng Boss mất " + damage + " máu!");
             }
             else if (rangedEnemy != null)
             {
                 rangedEnemy.TakeDamage(damage); 
-                Debug.Log("Đã chém quái tầm xa mất " + damage + " máu!");
             }
             else if (meleeEnemy != null)
             {
                 meleeEnemy.TakeDamage(damage); 
-                Debug.Log("Đã chém quái cận chiến mất " + damage + " máu!");
             }
             else
             {
@@ -102,15 +97,14 @@ public class PlayerAttack : MonoBehaviour
                 if (genericHealth != null)
                 {
                     genericHealth.TakeDamage(damage);
-                    Debug.Log("Đã chém trúng vật thể mất " + damage + " máu!");
                 }
             }
         }
 
-        // 4. CHỜ DIỄN XONG NHÁT CHÉM (Dừng lại 0.4 giây)
+        // 4. CHỜ MỘT LÚC (Ví dụ 0.4 giây) CHO ĐẾN KHI CHÉM XONG
         yield return new WaitForSeconds(attackDuration);
 
-        // 5. MỞ KHÓA DI CHUYỂN
+        // 5. TẮT KHÓA: Cho phép đi lại bình thường
         if (movementScript != null) movementScript.isAttacking = false;
     }
 

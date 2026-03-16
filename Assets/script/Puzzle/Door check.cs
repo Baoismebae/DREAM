@@ -1,12 +1,17 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DoorCheck : MonoBehaviour
 {
     void Start()
     {
-        if (PlayerPrefs.GetInt("PuzzleSolved") == 1)
+        CheckDoor();
+    }
+
+    void CheckDoor()
+    {
+        if (PlayerPrefs.GetInt("PuzzleSolved", 0) == 1)
         {
-            gameObject.SetActive(false);
+            gameObject.SetActive(false); // mở cửa
         }
     }
 }

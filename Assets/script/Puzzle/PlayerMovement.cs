@@ -1,44 +1,82 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class PlayerGridMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    public float moveDistance = 1f;
+    public float moveSpeed = 5f;
+
+    private bool isMoving;
+    private Vector3 targetPos;
+
     public LayerMask wallLayer;
     public LayerMask crateLayer;
 
-    void Update()
+    private SpriteRenderer sr;
+
+    void Start()
     {
-        if (Input.GetKeyDown(KeyCode.W))
-            TryMove(Vector2.up);
-
-        if (Input.GetKeyDown(KeyCode.S))
-            TryMove(Vector2.down);
-
-        if (Input.GetKeyDown(KeyCode.A))
-            TryMove(Vector2.left);
-
-        if (Input.GetKeyDown(KeyCode.D))
-            TryMove(Vector2.right);
+        targetPos = transform.position;
+        sr = GetComponent<SpriteRenderer>();
     }
 
-    void TryMove(Vector2 dir)
+    void Update()
     {
-        RaycastHit2D wallHit = Physics2D.Raycast(transform.position, dir, moveDistance, wallLayer);
-        if (wallHit.collider != null)
-            return;
+        if (isMoving) return;
 
-        RaycastHit2D crateHit = Physics2D.Raycast(transform.position, dir, moveDistance, crateLayer);
+        Vector2 dir = Vector2.zero;
 
-        if (crateHit.collider != null)
+        if (Input.GetKeyDown(KeyCode.W)) dir = Vector2.up;
+        if (Input.GetKeyDown(KeyCode.S)) dir = Vector2.down;
+        if (Input.GetKeyDown(KeyCode.A)) dir = Vector2.left;
+        if (Input.GetKeyDown(KeyCode.D)) dir = Vector2.right;
+
+        if (dir != Vector2.zero)
         {
-            Vector2 crateTarget = (Vector2)crateHit.collider.transform.position + dir;
-
-            if (Physics2D.Raycast(crateHit.collider.transform.position, dir, moveDistance, wallLayer))
-                return;
-
-            crateHit.collider.transform.position = crateTarget;
+            Move(dir);
         }
 
-        transform.position += (Vector3)(dir * moveDistance);
+        if (dir.x > 0) sr.flipX = false;
+        if (dir.x < 0) sr.flipX = true;
+    }
+
+    void Move(Vector2 dir)
+    {
+        Vector3 nextPos = transform.position + new Vector3(dir.x, dir.y, 0);
+
+        if (Physics2D.OverlapCircle(nextPos, 0.2f, wallLayer))
+            return;
+
+        Collider2D crate = Physics2D.OverlapCircle(nextPos, 0.2f, crateLayer);
+
+        if (crate != null)
+        {
+            Vector3 crateNext = nextPos + new Vector3(dir.x, dir.y, 0);
+
+            if (Physics2D.OverlapCircle(crateNext, 0.2f, wallLayer) ||
+                Physics2D.OverlapCircle(crateNext, 0.2f, crateLayer))
+                return;
+
+            crate.transform.position = crateNext;
+        }
+
+        targetPos = nextPos;
+        StartCoroutine(SmoothMove());
+    }
+
+    System.Collections.IEnumerator SmoothMove()
+    {
+        isMoving = true;
+
+        while (Vector3.Distance(transform.position, targetPos) > 0.01f)
+        {
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                targetPos,
+                moveSpeed * Time.deltaTime);
+
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        isMoving = false;
     }
 }

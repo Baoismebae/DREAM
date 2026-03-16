@@ -13,16 +13,20 @@ public class PuzzleOpen : MonoBehaviour
         }
     }
 
-    void OnCollisionEnter2D(Collision2D col)
+    void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.gameObject.CompareTag("Player"))
+        if (col.CompareTag("Player"))
+        {
             playerNear = true;
+            Debug.Log("Press E to enter puzzle");
+        }
     }
 
-    void OnCollisionExit2D(Collision2D col)
+    void OnTriggerExit2D(Collider2D col)
     {
-        if (col.gameObject.CompareTag("Player"))
+        if (col.CompareTag("Player"))
+        {
             playerNear = false;
+        }
     }
-
 }

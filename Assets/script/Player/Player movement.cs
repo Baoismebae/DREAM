@@ -2,8 +2,9 @@
 
 public class Playermovement : MonoBehaviour
 {
-    public float Speed;
-    public Rigidbody2D rb;
+    public float Speed = 5f;
+
+    private Rigidbody2D rb;
     private SpriteRenderer sr;
     public Animator ani;
 
@@ -24,33 +25,19 @@ public class Playermovement : MonoBehaviour
         ani.SetFloat("Vertical", movement.y);
         ani.SetFloat("Speed", movement.magnitude);
 
-        // Lật nhân vật khi đi trái phải
         if (movement.x > 0)
-        {
             sr.flipX = false;
-        }
         else if (movement.x < 0)
-        {
             sr.flipX = true;
-        }
-    }
-    void LateUpdate()
-    {
-        // Sắp xếp layer theo trục Y (top-down game)
-        sr.sortingLayerName = "Default";
-        sr.sortingOrder = (int)(-transform.position.y * 1000);
     }
 
     void FixedUpdate()
-{
-    if (movement.sqrMagnitude > 0.01f) 
     {
-        rb.linearVelocity = movement.normalized * Speed;
+        rb.linearVelocity = movement * Speed;
     }
-    else 
+
+    void LateUpdate()
     {
-        // Thay vì gán = Vector2.zero ngay, hãy dùng Lerp để giảm tốc mượt hơn
-        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, 0.2f); 
+        sr.sortingOrder = (int)(-transform.position.y * 1000);
     }
-}
 }

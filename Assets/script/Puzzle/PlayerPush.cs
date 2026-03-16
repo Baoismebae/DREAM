@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class PlayerPush : MonoBehaviour
 {
-    public float pushPower = 2f;
+    public LayerMask crateLayer;
 
-    void OnCollisionStay2D(Collision2D col)
+    void TryPush(Vector2 dir)
     {
-        if (col.gameObject.CompareTag("stone"))
+        Vector2 pos = transform.position + (Vector3)dir;
+
+        Collider2D crate = Physics2D.OverlapCircle(pos, 0.2f, crateLayer);
+
+        if (crate != null)
         {
-            Rigidbody2D rb = col.gameObject.GetComponent<Rigidbody2D>();
-            Vector2 dir = col.transform.position - transform.position;
-            rb.AddForce(dir * pushPower);
+            crate.transform.position += (Vector3)dir;
         }
     }
 }

@@ -384,7 +384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66efe5163bc810b459ae297d3399c139, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  moveDistance: 1
+  moveSpeed: 5
   wallLayer:
     serializedVersion: 2
     m_Bits: 1024

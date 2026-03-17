@@ -5,10 +5,10 @@ TagManager:
   serializedVersion: 3
   tags:
   - Stairs
-  - sokobantrigger
-  - stone
-  - Crate
   - wall
+  - boss
+  - goal
+  - box
   layers:
   - Default
   - TransparentFX
@@ -19,7 +19,7 @@ TagManager:
   - enemy
   - bullet
   - player
-  - crate
+  - box
   - wall
   - 
   - 

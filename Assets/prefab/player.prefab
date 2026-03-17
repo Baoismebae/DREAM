@@ -127,8 +127,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Playermovement
   Speed: 5
+  onHorizontalStairs: 0
+  stairSlope: -0.4
   rb: {fileID: 5764016826963741565}
   ani: {fileID: 1768071694650805111}
+  isAttacking: 0
 --- !u!114 &3734269073869876052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -208,6 +211,7 @@ MonoBehaviour:
   damage: 15
   attackRange: 1.5
   attackRate: 2
+  attackDuration: 0.4
   attackPoint: {fileID: 0}
   enemyLayers:
     serializedVersion: 2
@@ -226,7 +230,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 10000
   currentHealth: 10000
-  healthBar: {fileID: 1191804355694368996}
+  healthBar: {fileID: 0}
   playerMovementScript: {fileID: 877706206837866170}
   playerAttackScript: {fileID: 895873615789440638}
 --- !u!95 &1768071694650805111

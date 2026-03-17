@@ -51,7 +51,7 @@ public class Health : MonoBehaviour
         isDead = true;
         
         // 1. Kích hoạt anim ngã xuống
-        if (anim != null) anim.SetBool("isDead", true);
+        if (anim != null) anim.SetTrigger("Dead");
 
         // 2. KHÓA ĐIỀU KHIỂN: Tắt các script di chuyển và đánh
         if (playerMovementScript != null) playerMovementScript.enabled = false;

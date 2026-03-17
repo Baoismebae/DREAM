@@ -240,8 +240,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1600842641943589718}
-  - {fileID: 6106754780003749417}
   - {fileID: 5280193690193769448}
+  - {fileID: 6206181994442933059}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!70 &1751804157857098383
@@ -293,7 +293,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 0.53602093
   m_LinearDamping: 2
   m_AngularDamping: 0
   m_GravityScale: 0
@@ -321,8 +321,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI
   patrolPoints:
-  - {x: -4.8096275, y: -1.770428}
-  - {x: 2.9328766, y: -1.7980258}
+  - {x: -4.8312263, y: -1.2304525}
+  - {x: 2.9544754, y: -1.25805}
   - {x: 2.8960266, y: 0.9029341}
   - {x: -4.8027, y: 0.93820786}
   moveSpeed: 3
@@ -340,7 +340,7 @@ MonoBehaviour:
   coinPrefab: {fileID: 7969977241795108594, guid: 59f114a5049f7ff4492a8f7d8d18ed36, type: 3}
   minCoins: 2
   maxCoins: 5
-  healthSlider: {fileID: 2541250267712147133}
+  healthSlider: {fileID: 2439562443477861335}
 --- !u!114 &3612765090466179623
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,7 +459,7 @@ EdgeCollider2D:
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
   m_UseAdjacentEndPoint: 0
---- !u!1001 &475432161203413983
+--- !u!1001 &290015649871949493
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -469,19 +469,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 20376592195843050, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1768963176289448676, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2812128172338303389, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Name
-      value: Canvas 1
+      value: Canvas 1 (1)
       objectReference: {fileID: 0}
     - target: {fileID: 2812128172338303389, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5514387907511194022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_AnchorMax.y
@@ -489,11 +489,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5704839683099335899, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5863052115396281132, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_Pivot.x
@@ -549,7 +549,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.43689802
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -561,7 +561,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_LocalRotation.z
@@ -569,7 +569,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -604,10 +604,10 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
---- !u!114 &2541250267712147133 stripped
+--- !u!114 &2439562443477861335 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2728414669357854050, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
-  m_PrefabInstance: {fileID: 475432161203413983}
+  m_PrefabInstance: {fileID: 290015649871949493}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -615,8 +615,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
---- !u!224 &6106754780003749417 stripped
+--- !u!224 &6206181994442933059 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5919592577750380022, guid: 12ac7837fec5c2748bcbadbf9d24a6c0, type: 3}
-  m_PrefabInstance: {fileID: 475432161203413983}
+  m_PrefabInstance: {fileID: 290015649871949493}
   m_PrefabAsset: {fileID: 0}

@@ -61,9 +61,27 @@ public class Playermovement : MonoBehaviour
         }
         ani.SetFloat("Speed", movement.sqrMagnitude);
 
-        // 4. Lật mặt (Flip) - Chú ý: Nếu bị teleport, hãy kiểm tra Pivot ảnh
-        if (movement.x > 0) sr.flipX = false;
-        else if (movement.x < 0) sr.flipX = true;
+        if (movement.x != 0 || movement.y != 0)
+        {
+            ani.SetFloat("Horizontal", movement.x);
+            ani.SetFloat("Vertical", movement.y);
+        }
+        
+        // Riêng Speed thì vẫn phải gửi liên tục để Animator biết lúc nào nên đứng im
+        ani.SetFloat("Speed", movement.magnitude);
+
+        if (movement.x > 0)
+        {
+            sr.flipX = false; // Quay sang phải
+        }
+        else if (movement.x < 0)
+        {
+            sr.flipX = true;  // Quay sang trái
+        }
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+        Debug.Log("Tọa độ X khi vừa đổi hướng: " + transform.position.x);
+        }
     }
 
     void LateUpdate()
@@ -93,7 +111,15 @@ public class Playermovement : MonoBehaviour
         if (collision.CompareTag("Stairs"))
         {
             onHorizontalStairs = true;
-            currentSpeed = Speed * 0.8f;
+            
+            // 🌟 ĐIỂM MẤU CHỐT: Lấy độ dốc từ chính cái cầu thang đang dẫm lên
+            Stair currentStair = collision.GetComponent<Stair>();
+            if (currentStair != null)
+            {
+                stairSlope = currentStair.slope; // Cập nhật độ dốc mới cho Mage
+            }
+
+            currentSpeed = Speed * 0.8f; 
         }
     }
 

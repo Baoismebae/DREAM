@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement; // Thư viện bắt buộc để thực hiện Reset
+using UnityEngine.SceneManagement;
 
 public class SokobanPlayer : MonoBehaviour
 {
     [Header("Cấu hình Layer")]
-    public LayerMask wallLayer; // Gán layer Wall trong Inspector
-    public LayerMask boxLayer;  // Gán layer Box trong Inspector
+    public LayerMask wallLayer;
+    public LayerMask boxLayer;
 
     [Header("Cấu hình di chuyển")]
-    public float moveUnit = 1f; // Khoảng cách di chuyển đúng 1 ô
+    public float moveUnit = 1f;
 
     void Update()
     {
-        // 1. Lệnh Reset bằng phím tắt R
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetLevel();
@@ -20,7 +19,6 @@ public class SokobanPlayer : MonoBehaviour
 
         Vector2 dir = Vector2.zero;
 
-        // 2. Nhận phím bấm di chuyển
         if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) dir = Vector2.up;
         else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) dir = Vector2.down;
         else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) dir = Vector2.left;
@@ -32,46 +30,42 @@ public class SokobanPlayer : MonoBehaviour
         }
     }
 
+    // CHỈ GIỮ LẠI MỘT HÀM TRYMOVE NÀY
     void TryMove(Vector2 direction)
     {
-        // Tính toán vị trí Player muốn tới
-        Vector2 targetPos = (Vector2)transform.position + direction * moveUnit;
+        // Sử dụng Vector2 để triệt tiêu sai số trục Z, tránh lệch Y
+        Vector2 currentPos = transform.position;
+        Vector2 targetPos = currentPos + direction * moveUnit;
 
-        // KIỂM TRA TƯỜNG
+        // 1. Kiểm tra Tường
         if (Physics2D.OverlapCircle(targetPos, 0.2f, wallLayer))
         {
             return;
         }
 
-        // KIỂM TRA THÙNG (BOX)
+        // 2. Kiểm tra Thùng
         Collider2D boxHit = Physics2D.OverlapCircle(targetPos, 0.2f, boxLayer);
         if (boxHit != null)
         {
-            // Tính toán vị trí Thùng sẽ bị đẩy tới
             Vector2 boxTargetPos = targetPos + direction * moveUnit;
 
-            // Kiểm tra phía sau thùng có bị kẹt bởi tường hoặc thùng khác không
+            // Kiểm tra vật cản sau thùng
             if (Physics2D.OverlapCircle(boxTargetPos, 0.2f, wallLayer | boxLayer))
             {
                 return;
             }
 
-            // Nếu phía sau trống, di chuyển thùng sang ô mới
-            boxHit.transform.position = boxTargetPos;
+            // Di chuyển thùng và khóa trục Z = 0 để không bị lệch
+            boxHit.transform.position = new Vector3(boxTargetPos.x, boxTargetPos.y, 0);
         }
 
-        // Sau khi kiểm tra xong xuôi, di chuyển Player
-        transform.position = targetPos;
+        // 3. Di chuyển Player và khóa trục Z = 0
+        transform.position = new Vector3(targetPos.x, targetPos.y, 0);
     }
 
-    // 3. HÀM RESET: Dùng cho cả phím R và Nút bấm trên màn hình (UI Button)
     public void ResetLevel()
     {
-        // Lấy Index của Scene hiện tại để load lại từ đầu
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentSceneIndex);
-
-        // Đảm bảo thời gian không bị ngưng đọng
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         Time.timeScale = 1f;
         Debug.Log("Đã tải lại màn chơi!");
     }

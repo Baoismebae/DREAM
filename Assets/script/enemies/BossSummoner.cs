@@ -1,24 +1,32 @@
 using UnityEngine;
+using Unity.Cinemachine;
+using FirstGearGames.SmoothCameraShaker;
 
 public class BossSummoner : MonoBehaviour
 {
-    [Header("ĐỐI TƯỢNG CẦN GỌI")]
-    public GameObject bossObject; // Kéo con Boss đang tàng hình vào đây
-    public GameObject interactUI; // (Tùy chọn) Chữ "Bấm E" hiện lên cho đẹp
+   [Header("ĐỐI TƯỢNG CẦN GỌI")]
+    public GameObject bossObject; 
+    public GameObject interactUI; 
+    
+    [Header("CAMERA & HIỆU ỨNG")]
+    public CinemachineCamera bossCamera;
+    
+    // 2. Thêm cái hộp để chứa data rung
+    public ShakeData explosionShakeData; 
 
-    private bool isPlayerInRange = false; // Player có đang đứng gần không?
-    private bool hasSummoned = false;     // Đã gọi Boss chưa? (Chống spam nút)
+    private bool isPlayerInRange = false; 
+    private bool hasSummoned = false;     
 
     void Start()
     {
-        // Đảm bảo lúc mới vào game, mọi thứ đều tàng hình
         if (bossObject != null) bossObject.SetActive(false);
         if (interactUI != null) interactUI.SetActive(false);
+        
+        if (bossCamera != null) bossCamera.Priority = 0; 
     }
 
     void Update()
     {
-        // Nếu Player đang đứng gần + Chưa gọi Boss + Bấm nút E
         if (isPlayerInRange && !hasSummoned && Input.GetKeyDown(KeyCode.E))
         {
             SummonBoss();
@@ -27,39 +35,47 @@ public class BossSummoner : MonoBehaviour
 
     void SummonBoss()
     {
-        hasSummoned = true; // Khóa lại, không cho gọi 2 con Boss cùng lúc
+        hasSummoned = true; 
         
-        // Tắt chữ "Bấm E" đi
         if (interactUI != null) interactUI.SetActive(false);
 
-        // BÙM! Bật Boss lên
+        if (bossCamera != null)
+        {
+            bossCamera.Priority = 20;
+        }
+
         if (bossObject != null)
         {
             bossObject.SetActive(true);
             Debug.Log("Đã triệu hồi Boss thành công!");
             
-            // Mẹo: Bạn có thể code thêm hiệu ứng rung màn hình, 
-            // hoặc sinh ra Particle bùm chéo ở đây cho ngầu!
+            // 3. GỌI RUNG LẮC NGAY LÚC BOSS VỪA XUẤT HIỆN
+            if (explosionShakeData != null)
+            {
+                CameraShakerHandler.Shake(explosionShakeData);
+            }
+            else
+            {
+                Debug.LogWarning("Chưa kéo file ShakeData vào Bệ Đá nha Lem Dúa ơi!");
+            }
         }
     }
 
-    // Khi Player bước vào vùng cảm ứng
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player") && !hasSummoned)
         {
             isPlayerInRange = true;
-            if (interactUI != null) interactUI.SetActive(true); // Hiện chữ "Bấm E"
+            if (interactUI != null) interactUI.SetActive(true);
         }
     }
 
-    // Khi Player bước ra khỏi vùng cảm ứng
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
             isPlayerInRange = false;
-            if (interactUI != null) interactUI.SetActive(false); // Ẩn chữ "Bấm E"
+            if (interactUI != null) interactUI.SetActive(false); 
         }
     }
 }

@@ -280,20 +280,25 @@ public class AI : MonoBehaviour
     {
         if (anim == null) return;
 
-        // Nếu quái đang đứng chờ ở điểm tuần tra -> Chắc chắn là Idle
-        if (isWaiting)
+        // Ưu tiên 1: Đang chờ đợi hoặc đang chuẩn bị chém -> Tắt hết di chuyển, về Idle
+        if (isWaiting || isAttacking || (isChasing && Vector2.Distance(transform.position, player.position) <= stopDistance))
         {
+            anim.SetBool("isWalking", false);
             anim.SetBool("isRunning", false);
+            return; // Thoát ra, không xử lý gì thêm
         }
-        // Nếu quái đang di chuyển (đi tuần hoặc đuổi theo) -> Chắc chắn là Run
-        else if (!isAttacking) 
+
+        // Ưu tiên 2: Đang rượt Player -> Tắt Walk, Bật Run
+        if (isChasing)
         {
+            anim.SetBool("isWalking", false);
             anim.SetBool("isRunning", true);
         }
-        // Nếu quái đang ở sát Player (chuẩn bị chém) -> Dừng Run
-        if (isChasing && Vector2.Distance(transform.position, player.position) <= stopDistance)
+        // Ưu tiên 3: Đi tuần tra thong thả -> Tắt Run, Bật Walk
+        else 
         {
             anim.SetBool("isRunning", false);
+            anim.SetBool("isWalking", true);
         }
     }
 

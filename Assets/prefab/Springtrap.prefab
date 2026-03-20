@@ -216,9 +216,9 @@ GameObject:
   - component: {fileID: 8141485450975776951}
   - component: {fileID: 1751804157857098383}
   - component: {fileID: 8998019080557081640}
-  - component: {fileID: 971224874272528940}
   - component: {fileID: 3612765090466179623}
   - component: {fileID: 4262954485542190804}
+  - component: {fileID: 6002726401871790891}
   m_Layer: 6
   m_Name: Springtrap
   m_TagString: Untagged
@@ -308,39 +308,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &971224874272528940
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7201827595624009889}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4ff575081a01024e90f4fc1fd0741bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AI
-  patrolPoints:
-  - {x: -4.8312263, y: -1.2304525}
-  - {x: 2.9544754, y: -1.25805}
-  - {x: 2.8960266, y: 0.9029341}
-  - {x: -4.8027, y: 0.93820786}
-  moveSpeed: 3
-  stopDistance: 1
-  minWaitTime: 0.5
-  maxWaitTime: 4
-  enemyDamage: 10
-  detectionRange: 7.25
-  attackCooldown: 2
-  player: {fileID: 0}
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  maxHealth: 75
-  coinPrefab: {fileID: 7969977241795108594, guid: 59f114a5049f7ff4492a8f7d8d18ed36, type: 3}
-  minCoins: 2
-  maxCoins: 5
-  healthSlider: {fileID: 2439562443477861335}
 --- !u!114 &3612765090466179623
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,6 +426,39 @@ EdgeCollider2D:
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
   m_UseAdjacentEndPoint: 0
+--- !u!114 &6002726401871790891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7201827595624009889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c767e33f2e09e6c47b608a2a948b9c9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpringTrapAI
+  patrolPoints:
+  - {x: -2.8385162, y: -2.0853062}
+  - {x: 3.5826187, y: -2.0739536}
+  - {x: 3.5807228, y: 0.517334}
+  - {x: -2.8204002, y: 0.5232773}
+  moveSpeed: 2
+  stopDistance: 0.8
+  minWaitTime: 1
+  maxWaitTime: 3
+  enemyDamage: 10
+  detectionRange: 5
+  attackCooldown: 1.5
+  player: {fileID: 0}
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  maxHealth: 50
+  coinPrefab: {fileID: 7969977241795108594, guid: 59f114a5049f7ff4492a8f7d8d18ed36, type: 3}
+  minCoins: 1
+  maxCoins: 5
+  healthSlider: {fileID: 2439562443477861335}
 --- !u!1001 &290015649871949493
 PrefabInstance:
   m_ObjectHideFlags: 0

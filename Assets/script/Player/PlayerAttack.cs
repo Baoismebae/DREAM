@@ -14,8 +14,11 @@ public class PlayerAttack : MonoBehaviour
     private Playermovement movementScript; 
 
     [Header("CẤU HÌNH VA CHẠM CAPSULE")]
-    public Collider2D swordCollider;
+    public Collider2D swordCollider; 
     public LayerMask enemyLayers; 
+
+    [Header("HIỆU ỨNG KHI TRÚNG ĐÒN")]
+    public GameObject hitParticlePrefab; 
 
     private Animator ani;
 
@@ -29,7 +32,6 @@ public class PlayerAttack : MonoBehaviour
     {
         if (Time.time >= nextAttackTime)
         {
-           
             if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
             {
                 Attack(); 
@@ -45,32 +47,41 @@ public class PlayerAttack : MonoBehaviour
 
     IEnumerator AttackRoutine()
     {
-    
         if (movementScript != null) movementScript.isAttacking = true;
         if (ani != null) ani.SetTrigger("Attack");
 
-     
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(enemyLayers);
         filter.useLayerMask = true;
 
         List<Collider2D> hitEnemies = new List<Collider2D>();
-
+        
         if (swordCollider != null)
         {
             Physics2D.OverlapCollider(swordCollider, filter, hitEnemies);
         }
 
-    
         foreach (Collider2D enemy in hitEnemies)
         {
+            if (hitParticlePrefab != null)
+            {
+                Destroy(Instantiate(hitParticlePrefab, enemy.transform.position, Quaternion.identity), 0.2f);
+            }
+        
             ShootingAI rangedEnemy = enemy.GetComponentInParent<ShootingAI>();
             AI meleeEnemy = enemy.GetComponentInParent<AI>();
             BossAI boss = enemy.GetComponentInParent<BossAI>();
+            
+            // 🌟 1. Gọi tên con Springtrap ra đây
+            SpringTrapAI springTrapEnemy = enemy.GetComponentInParent<SpringTrapAI>();
 
             if (boss != null) boss.TakeDamage(damage); 
             else if (rangedEnemy != null) rangedEnemy.TakeDamage(damage); 
             else if (meleeEnemy != null) meleeEnemy.TakeDamage(damage); 
+            
+            // 🌟 2. Nếu chém trúng con Springtrap thì gọi hàm trừ máu của nó
+            else if (springTrapEnemy != null) springTrapEnemy.TakeDamage(damage); 
+            
             else
             {
                 Health genericHealth = enemy.GetComponentInParent<Health>();

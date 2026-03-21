@@ -8,7 +8,6 @@ public class RoomMap3Cam : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            // Báo lên Console để tụi mình biết Mage đã dẫm vào
             Debug.Log("Mage vừa dẫm vào phòng: " + gameObject.name); 
             virtualCam.SetActive(true);
         }

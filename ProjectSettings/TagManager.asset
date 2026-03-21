@@ -9,6 +9,7 @@ TagManager:
   - boss
   - goal
   - box
+  - coin
   layers:
   - Default
   - TransparentFX
@@ -21,7 +22,7 @@ TagManager:
   - player
   - box
   - wall
-  - 
+  - playerBullet
   - 
   - 
   - 

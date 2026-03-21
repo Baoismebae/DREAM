@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class ShootingAI : MonoBehaviour
 {
-   [Header("CẤU HÌNH TUẦN TRA")]
+  [Header("CẤU HÌNH TUẦN TRA")]
     public Vector2[] patrolPoints = new Vector2[] { new Vector2(-2, -2), new Vector2(2, -2) };
     public float moveSpeed = 3f;
     public float stopDistance = 0.8f;
@@ -20,17 +20,22 @@ public class ShootingAI : MonoBehaviour
     public GameObject bulletParent; 
     public Transform player;
 
-    [Header("MÁU & BỊ THƯƠNG")]
+    [Header("MÁU & RỚT ĐỒ")]
     public UnityEngine.UI.Slider healthSlider;
     private Vector3 healthBarScale;
     public float maxHealth = 30f;
+    
+    // 🌟 ĐÃ THÊM: BIẾN CHỨA ĐỒNG XU
+    public GameObject coinPrefab; 
+    public int minCoins = 1;      
+    public int maxCoins = 3;      
+
     private float currentHealth;
     private bool isDead = false;
 
     [Header("ANIMATION BẮN")]
     public float chargeTime = 1f; 
     private bool isShootingAction = false; 
-
 
     private Vector2 startPosition; 
     private Vector2 nextPoint;
@@ -56,7 +61,6 @@ public class ShootingAI : MonoBehaviour
         {
             GameObject targetObj = GameObject.FindGameObjectWithTag("Player");
             if (targetObj != null) player = targetObj.transform;
-            
         }
         SetNewPatrolPoint();
     }
@@ -113,14 +117,38 @@ public class ShootingAI : MonoBehaviour
 
     void Die()
     {
+        if (isDead) return; // Bảo vệ chống chết 2 lần giống SpringTrap
         isDead = true;
+
         if (anim != null) anim.SetBool("isDead", true);
+
+        // ==========================================
+        // 🌟 ĐÃ THÊM: LOGIC RƠI TIỀN KHI CHẾT
+        // ==========================================
+        if (coinPrefab != null)
+        {
+            int lootAmount = Random.Range(minCoins, maxCoins + 1);
+            for (int i = 0; i < lootAmount; i++)
+            {
+                GameObject coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);
+                
+                // Cho đồng xu văng ra ngẫu nhiên
+                Rigidbody2D rb = coin.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    Vector2 scatter = new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f)).normalized;
+                    rb.AddForce(scatter * 0.5f, ForceMode2D.Impulse);
+                }
+            }
+        }
+        // ==========================================
+
         GetComponent<Collider2D>().enabled = false; // Tắt va chạm
 
-        // Ẩn thanh máu đi cho đỡ vướng mắt khi xác quái còn nằm đó
+        // Ẩn thanh máu đi cho đỡ vướng mắt
         if (healthSlider != null) healthSlider.gameObject.SetActive(false);
 
-        Destroy(gameObject, 1.375f); //
+        Destroy(gameObject, 1.375f); 
     }
 
     void ShootLogic() 
@@ -138,23 +166,18 @@ public class ShootingAI : MonoBehaviour
     {
         isShootingAction = true;
 
-        // 1. Chuyển từ Idle sang Charge
         if (anim != null) anim.SetBool("isCharging", true);
 
-        // 2. Chờ thời gian gồng (chargeTime)
         yield return new WaitForSeconds(chargeTime); 
 
-        // 3. Tạo đạn bay ra
         if (bullet != null && !isDead) 
         {
             Vector2 spawnPos = (bulletParent != null) ? (Vector2)bulletParent.transform.position : (Vector2)transform.position;
             Instantiate(bullet, spawnPos, Quaternion.identity);
         }
 
-        // 4. Bắn xong thì tắt Charge -> Animator sẽ tự động quay về Idle
         if (anim != null) anim.SetBool("isCharging", false);
 
-        // 5. Đứng nghỉ một lúc (Idle) theo biến fireRate rồi mới bắn tiếp
         yield return new WaitForSeconds(fireRate);
 
         isShootingAction = false;
@@ -202,7 +225,6 @@ public class ShootingAI : MonoBehaviour
     {
         if (healthSlider != null)
         {
-            // Ép thanh máu luôn hiển thị đúng chiều dương, bất kể quái quay đi đâu
             healthSlider.transform.localScale = new Vector3(
                 healthBarScale.x * Mathf.Sign(transform.localScale.x),
                 healthBarScale.y,

@@ -35,13 +35,13 @@ public class PlayerAttack : MonoBehaviour
     public float attackDuration = 0.4f; 
     private Playermovement movementScript; 
     private Animator ani;
-    private SpriteRenderer playerSr; // Thêm biến để điều khiển lật ảnh Mage
+    private SpriteRenderer playerSr; 
 
     void Start()
     {
         ani = GetComponent<Animator>();
         movementScript = GetComponent<Playermovement>(); 
-        playerSr = GetComponent<SpriteRenderer>(); // Lấy SpriteRenderer của Mage
+        playerSr = GetComponent<SpriteRenderer>(); 
         
         currentStamina = maxStamina;
         if (staminaSlider != null)
@@ -53,7 +53,6 @@ public class PlayerAttack : MonoBehaviour
 
     void Update()
     {
-        // Hồi thể lực
         if (currentStamina < maxStamina)
         {
             currentStamina += staminaRegenRate * Time.deltaTime;
@@ -61,16 +60,13 @@ public class PlayerAttack : MonoBehaviour
             if (staminaSlider != null) staminaSlider.value = currentStamina;
         }
 
-        // Đổi vũ khí
         if (Input.GetKeyDown(switchWeaponKey))
         {
             isRangedMode = !isRangedMode;
         }
 
-        // Xoay gậy theo chuột
         HandleWandAiming();
 
-        // Bắn / Chém
         if (Time.time >= nextAttackTime)
         {
             if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
@@ -94,7 +90,6 @@ public class PlayerAttack : MonoBehaviour
         }
     }
 
-    // ================= 🌟 ĐÃ LÀM LẠI: HÒA BÌNH VỚI PLAYERMOVEMENT =================
     void HandleWandAiming()
     {
         if (wandTransform == null) return;
@@ -106,26 +101,17 @@ public class PlayerAttack : MonoBehaviour
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePos.z = 0f;
 
-            // 1. Lật mặt con Mage BẰNG FLIPX (Giống hệt cách Playermovement làm)
             if (playerSr != null)
             {
                 if (mousePos.x > transform.position.x) playerSr.flipX = false;
                 else if (mousePos.x < transform.position.x) playerSr.flipX = true;
             }
 
-            // 2. Xoay Quyền trượng 360 độ (Toán học thuần túy, không sợ kẹt vì không có scale âm)
             Vector2 aimDirection = mousePos - wandTransform.position;
             float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
-            
-            // Trừ 90 độ vì ảnh gốc quyền trượng của cậu vẽ dựng đứng
             wandTransform.rotation = Quaternion.Euler(0, 0, angle - 90f);
 
-            // 3. Chống ngược Gậy khi xoay sang trái
-            if (wandSprite != null)
-            {
-                // Vì gậy vẽ dựng đứng, nên khi xoay ngang ta dùng flipX để lật bề mặt của nó
-                wandSprite.flipX = (mousePos.x < transform.position.x);
-            }
+            if (wandSprite != null) wandSprite.flipX = (mousePos.x < transform.position.x);
         }
         else
         {
@@ -133,7 +119,53 @@ public class PlayerAttack : MonoBehaviour
         }
     }
 
-    // ================= LOGIC ĐÁNH GẦN (Giữ nguyên) =================
+    void TriggerAttackAnimation()
+    {
+        if (ani == null) return;
+
+        ani.SetBool("isRanged", isRangedMode);
+
+        float finalAimX = 0f;
+        float finalAimY = 0f;
+
+        if (isRangedMode)
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePos.z = 0f;
+            Vector2 aimDir = (mousePos - transform.position).normalized;
+            
+            finalAimX = Mathf.Abs(aimDir.x); 
+            finalAimY = aimDir.y;
+        }
+        else
+        {
+            float moveX = ani.GetFloat("Horizontal");
+            float moveY = ani.GetFloat("Vertical");
+
+            if (moveX == 0 && moveY == 0) moveX = 1f;
+
+            Vector2 aimDir = new Vector2(moveX, moveY).normalized;
+            finalAimX = Mathf.Abs(aimDir.x);
+            finalAimY = aimDir.y;
+
+            if (swordCollider != null && swordCollider.transform != this.transform)
+            {
+                if (playerSr != null && playerSr.flipX)
+                {
+                    swordCollider.transform.localRotation = Quaternion.Euler(0, 180f, 0);
+                }
+                else
+                {
+                    swordCollider.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                }
+            }
+        }
+
+        ani.SetFloat("AimX", finalAimX);
+        ani.SetFloat("AimY", finalAimY);
+        ani.SetTrigger("Attack");
+    }
+
     void Attack()
     {
         StartCoroutine(AttackRoutine());
@@ -142,7 +174,8 @@ public class PlayerAttack : MonoBehaviour
     IEnumerator AttackRoutine()
     {
         if (movementScript != null) movementScript.isAttacking = true;
-        if (ani != null) ani.SetTrigger("Attack");
+        
+        TriggerAttackAnimation(); 
 
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(enemyLayers);
@@ -175,10 +208,9 @@ public class PlayerAttack : MonoBehaviour
         if (movementScript != null) movementScript.isAttacking = false;
     }
 
-    // ================= LOGIC BẮN XA (Giữ nguyên) =================
     void Shoot()
     {
-        if (ani != null) ani.SetTrigger("Attack"); 
+        TriggerAttackAnimation(); 
         
         if (bulletPrefab != null && firePoint != null)
         {
@@ -190,10 +222,7 @@ public class PlayerAttack : MonoBehaviour
             GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.Euler(0, 0, angle));
             
             Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.linearVelocity = shootDirection * bulletSpeed; 
-            }
+            if (rb != null) rb.linearVelocity = shootDirection * bulletSpeed; 
         }
     }
 }

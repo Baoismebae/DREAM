@@ -126,12 +126,6 @@ NavMeshSettings:
  
 --- !u!1 &68990704
   240ed5dc1b16a1b4f919c75551b376568d5f3aff
- 
---- !u!1 &68990704
-  240ed5dc1b16a1b4f919c75551b376568d5f3aff
- 
---- !u!1 &68990704
-  240ed5dc1b16a1b4f919c75551b376568d5f3aff
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4183,12 +4177,6 @@ TilemapRenderer:
   HEAD
   HEAD
 --- !u!1839735485 &764946014
- 
---- !u!1839735485 &401057882
-  240ed5dc1b16a1b4f919c75551b376568d5f3aff
- 
---- !u!1839735485 &401057882
-  240ed5dc1b16a1b4f919c75551b376568d5f3aff
  
 --- !u!1839735485 &401057882
   240ed5dc1b16a1b4f919c75551b376568d5f3aff

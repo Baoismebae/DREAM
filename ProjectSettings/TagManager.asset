@@ -7,10 +7,10 @@ TagManager:
   - Stairs
   - wall
   - boss
-  - goal
-  - box
   - coin
   - door
+  - Crate
+  - Goal
   layers:
   - Default
   - TransparentFX
@@ -21,11 +21,11 @@ TagManager:
   - enemy
   - bullet
   - player
-  - box
+  - Crate
   - wall
   - playerBullet
-  - 
-  - 
+  - Goal
+  - Solid
   - 
   - 
   - 

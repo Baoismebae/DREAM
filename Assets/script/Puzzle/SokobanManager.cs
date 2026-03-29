@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class SokobanManager : MonoBehaviour
 {
@@ -42,13 +43,27 @@ public class SokobanManager : MonoBehaviour
     void WinMinigame()
     {
         Debug.Log("Thắng game!");
-        GameManager.isSokobanSolved = true; // Lưu trạng thái
-        SceneManager.LoadScene(map3SceneName); // Trả về Map 3
+        GameManager.isSokobanSolved = true;
+
+        // Phát nhạc thắng
+        if (SokobanAudioManager.Instance != null) SokobanAudioManager.Instance.PlaySFX(SokobanAudioManager.Instance.winSound);
+
+        // Trì hoãn 1 giây rồi mới về map 3 để nghe nhạc
+        StartCoroutine(DelayLoadScene(map3SceneName, 1f));
     }
 
     public void ResetGame()
     {
-        // Load lại chính Scene hiện tại
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // Phát tiếng reset
+        if (SokobanAudioManager.Instance != null) SokobanAudioManager.Instance.PlaySFX(SokobanAudioManager.Instance.resetSound);
+
+        // Trì hoãn 0.3 giây rồi mới nạp lại scene
+        StartCoroutine(DelayLoadScene(SceneManager.GetActiveScene().name, 0.3f));
+    }
+
+    IEnumerator DelayLoadScene(string sceneName, float delayTime)
+    {
+        yield return new WaitForSeconds(delayTime);
+        SceneManager.LoadScene(sceneName);
     }
 }

@@ -95,15 +95,14 @@ public class ShootingAI : MonoBehaviour
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     public void TakeDamage(float damageAmount)
     {
         if (isDead) return;
-        
+
         currentHealth -= damageAmount;
-        if (healthSlider != null)
-        {
-            healthSlider.value = currentHealth;
-        }
+        if (healthSlider != null) { healthSlider.value = currentHealth; }
 
         if (currentHealth <= 0)
         {
@@ -112,15 +111,23 @@ public class ShootingAI : MonoBehaviour
         else
         {
             if (anim != null) anim.SetTrigger("Hurt");
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng rên khi bị đánh trúng
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobHurt);
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     void Die()
     {
-        if (isDead) return; // Bảo vệ chống chết 2 lần giống SpringTrap
+        if (isDead) return;
         isDead = true;
 
         if (anim != null) anim.SetBool("isDead", true);
+
+        // 🌟 ĐÃ THÊM ÂM THANH: Tiếng nổ tung/bốc hơi khi chết
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobDie);
+
+        // ... (Phần logic rơi tiền và xóa object bên dưới giữ nguyên của bạn)
 
         // ==========================================
         // 🌟 ĐÃ THÊM: LOGIC RƠI TIỀN KHI CHẾT
@@ -162,24 +169,26 @@ public class ShootingAI : MonoBehaviour
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     System.Collections.IEnumerator ShootSequence()
     {
         isShootingAction = true;
 
         if (anim != null) anim.SetBool("isCharging", true);
 
-        yield return new WaitForSeconds(chargeTime); 
+        yield return new WaitForSeconds(chargeTime);
 
-        if (bullet != null && !isDead) 
+        if (bullet != null && !isDead)
         {
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng khạc đạn/bắn cung
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobShoot);
+
             Vector2 spawnPos = (bulletParent != null) ? (Vector2)bulletParent.transform.position : (Vector2)transform.position;
             Instantiate(bullet, spawnPos, Quaternion.identity);
         }
 
         if (anim != null) anim.SetBool("isCharging", false);
-
         yield return new WaitForSeconds(fireRate);
-
         isShootingAction = false;
     }
 

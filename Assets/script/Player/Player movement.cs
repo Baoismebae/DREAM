@@ -21,6 +21,9 @@ public class Playermovement : MonoBehaviour
 
     private Vector2 movement;
 
+    private float footstepTimer = 0f;
+    public float footstepDelay = 1f; // Tốc độ phát tiếng bước chân (chỉnh cho khớp với animation)
+
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -81,6 +84,23 @@ public class Playermovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
         {
         Debug.Log("Tọa độ X khi vừa đổi hướng: " + transform.position.x);
+        }
+
+        // Giả sử biến di chuyển của bạn là moveX, moveY hoặc rb.velocity.magnitude
+        bool isMoving = (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0 || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0);
+
+        if (isMoving)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0f)
+            {
+                if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.footstep);
+                footstepTimer = footstepDelay; // Reset đồng hồ
+            }
+        }
+        else
+        {
+            footstepTimer = 0f; // Dừng lại là reset ngay để bước tiếp theo kêu luôn
         }
     }
 

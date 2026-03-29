@@ -108,17 +108,14 @@ public class AI : MonoBehaviour
     }
 
     // ================= LOGIC NHẬN SÁT THƯƠNG =================
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     public void TakeDamage(float damageAmount)
     {
         if (isDead) return;
 
         currentHealth -= damageAmount;
-        
-        if (healthSlider != null)
-        {
-            healthSlider.value = currentHealth;
-        }
-        
+        if (healthSlider != null) { healthSlider.value = currentHealth; }
+
         if (currentHealth <= 0)
         {
             Die();
@@ -126,33 +123,25 @@ public class AI : MonoBehaviour
         else
         {
             if (anim != null) anim.SetTrigger("Hurt");
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng rên khi bị đánh trúng
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobHurt);
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     void Die()
     {
-        if (isDead) return; // Bảo vệ để quái không chết 2 lần
+        if (isDead) return;
         isDead = true;
 
         if (anim != null) anim.SetBool("isDead", true);
-        
-        // --- LOGIC RƠI TIỀN ---
-        if (coinPrefab != null)
-        {
-            int lootAmount = Random.Range(minCoins, maxCoins + 1);
-            for (int i = 0; i < lootAmount; i++)
-            {
-                GameObject coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);
-                
-                // Cho đồng xu văng ra ngẫu nhiên cho đẹp
-                Rigidbody2D rb = coin.GetComponent<Rigidbody2D>();
-                if (rb != null)
-                {
-                    Vector2 scatter = new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f)).normalized;
-                    rb.AddForce(scatter * 0.5f, ForceMode2D.Impulse);
-                }
-            }
-        }
+
+        // 🌟 ĐÃ THÊM ÂM THANH: Tiếng nổ tung/bốc hơi khi chết
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobDie);
+
+        // ... (Phần logic rơi tiền và xóa object bên dưới giữ nguyên của bạn)
+
+        // --- LOGIC RƠI TIỀN --- (Phần này giữ nguyên)
         // -----------------------
 
         GetComponent<Collider2D>().enabled = false;
@@ -172,27 +161,31 @@ public class AI : MonoBehaviour
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     System.Collections.IEnumerator AttackSequence()
     {
         isAttacking = true;
-        
+
         // Gọi Trigger Attack
         if (anim != null) anim.SetTrigger("MeleeAttack");
 
+        // 🌟 ĐÃ THÊM ÂM THANH: Tiếng vung vũ khí chém
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobSlash);
+
         yield return new WaitForSeconds(0.3f);
-        
-        if (!isDead) 
+
+        if (!isDead)
         {
             float distance = Vector2.Distance(transform.position, player.position);
             if (distance <= stopDistance)
             {
                 Health playerHealth = player.GetComponent<Health>();
-                if (playerHealth != null) playerHealth.TakeDamage(enemyDamage); 
+                if (playerHealth != null) playerHealth.TakeDamage(enemyDamage);
             }
         }
 
         yield return new WaitForSeconds(attackCooldown);
-        isAttacking = false; 
+        isAttacking = false;
     }
 
     // ================= LOGIC DI CHUYỂN =================

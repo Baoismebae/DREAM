@@ -35,8 +35,8 @@ public class BossSummoner : MonoBehaviour
 
     void SummonBoss()
     {
-        hasSummoned = true; 
-        
+        hasSummoned = true;
+
         if (interactUI != null) interactUI.SetActive(false);
 
         if (bossCamera != null)
@@ -48,7 +48,7 @@ public class BossSummoner : MonoBehaviour
         {
             bossObject.SetActive(true);
             Debug.Log("Đã triệu hồi Boss thành công!");
-            
+
             // 3. GỌI RUNG LẮC NGAY LÚC BOSS VỪA XUẤT HIỆN
             if (explosionShakeData != null)
             {
@@ -58,6 +58,19 @@ public class BossSummoner : MonoBehaviour
             {
                 Debug.LogWarning("Chưa kéo file ShakeData vào Bệ Đá nha Lem Dúa ơi!");
             }
+
+            // ==========================================
+            // 🌟 ĐÃ THÊM: ĐỔI NHẠC VÀ PHÁT TIẾNG GẦM
+            // ==========================================
+            if (GlobalAudioManager.Instance != null)
+            {
+                // 1. Dập tắt nhạc đồng quê, bật nhạc Boss dồn dập
+                GlobalAudioManager.Instance.PlayBGM(GlobalAudioManager.Instance.bossFightBGM);
+
+                // 2. Kèm theo tiếng Boss gầm thét rung trời
+                GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossRoar);
+            }
+            // ==========================================
         }
     }
 

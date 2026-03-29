@@ -97,7 +97,7 @@ public class BossAI : MonoBehaviour
         {
             chaseTimer += Time.deltaTime;
             MoveTowardsTarget(player.position, walkSpeed);
-            yield return null; 
+            yield return null;
         }
 
         if (anim != null) anim.SetBool("isRunning", false);
@@ -106,14 +106,17 @@ public class BossAI : MonoBehaviour
         {
             LookAtTarget(player.position);
             if (anim != null) anim.SetTrigger("MeleeAttack");
-            
-            yield return new WaitForSeconds(0.3f); 
-            
+
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng Boss vung vũ khí nặng chém xuống
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossMelee);
+
+            yield return new WaitForSeconds(0.3f);
+
             if (Vector2.Distance(transform.position, player.position) <= meleeAttackRange && !isDead)
             {
                 player.GetComponent<Health>().TakeDamage(meleeDamage);
             }
-            yield return new WaitForSeconds(1f); 
+            yield return new WaitForSeconds(1f);
         }
     }
 
@@ -145,15 +148,20 @@ public class BossAI : MonoBehaviour
         // ==========================================
         // 2. TÍNH TOÁN GÓC BẮN 360 ĐỘ (Giữ nguyên của bạn)
         // ==========================================
-        float angleStep = 360f / bulletsPerWave; 
-        float spiralShift = 10f; 
+        // ... (phần trên lướt ra giữa map giữ nguyên) ...
+
+        float angleStep = 360f / bulletsPerWave;
+        float spiralShift = 10f;
 
         Vector2 dirToPlayer = player.position - transform.position;
         float baseAngle = Mathf.Atan2(dirToPlayer.y, dirToPlayer.x) * Mathf.Rad2Deg;
 
         for (int i = 0; i < waves; i++)
         {
-            if (anim != null) anim.SetTrigger("CastSpell"); 
+            if (anim != null) anim.SetTrigger("CastSpell");
+
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng xoẹt xoẹt mỗi khi nhả một vòng đạn (Không để trong vòng for j nhé!)
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossSpiralShoot);
 
             for (int j = 0; j < bulletsPerWave; j++)
             {
@@ -162,11 +170,11 @@ public class BossAI : MonoBehaviour
 
                 GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
                 Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-                if (rb != null) rb.linearVelocity = bulletDir * 5f; 
+                if (rb != null) rb.linearVelocity = bulletDir * 5f;
             }
-            
-            baseAngle += spiralShift; 
-            yield return new WaitForSeconds(timeBetweenWaves); 
+
+            baseAngle += spiralShift;
+            yield return new WaitForSeconds(timeBetweenWaves);
         }
     }
 
@@ -177,11 +185,14 @@ public class BossAI : MonoBehaviour
 
         for (int i = 0; i < meteorCount; i++)
         {
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng thiên thạch rớt ầm ầm (Lặp lại mỗi lần rớt 1 cục)
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossMeteor);
+
             Vector2 randomDropPos = (Vector2)player.position + Random.insideUnitCircle * dropRadius;
             Instantiate(meteorPrefab, randomDropPos, Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenMeteors);
         }
-        yield return new WaitForSeconds(1f); 
+        yield return new WaitForSeconds(1f);
     }
 
     // =========================================================
@@ -192,7 +203,6 @@ public class BossAI : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damageAmount;
-        
         if (healthSlider != null) healthSlider.value = currentHealth;
 
         if (currentHealth <= 0)
@@ -201,8 +211,11 @@ public class BossAI : MonoBehaviour
         }
         else
         {
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng Boss rên rỉ khi trúng đòn (dù bị giật mình hay không vẫn kêu)
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossHurt);
+
             bool isMoving = false;
-            if (anim != null) 
+            if (anim != null)
             {
                 isMoving = anim.GetBool("isRunning") || anim.GetBool("isFlying");
             }
@@ -229,21 +242,28 @@ public class BossAI : MonoBehaviour
     void BossDie()
     {
         isDead = true;
-        
-        // Dừng tất cả các chiêu thức đang xài dang dở
-        StopAllCoroutines(); 
+        StopAllCoroutines();
+
+        // 🌟 ĐÃ THÊM ÂM THANH: Chuỗi sự kiện âm thanh chiến thắng
+        if (GlobalAudioManager.Instance != null)
+        {
+            // 1. Tắt nhạc nền đánh Boss
+            if (GlobalAudioManager.Instance.bgmSource != null) GlobalAudioManager.Instance.bgmSource.Stop();
+
+            // 2. Tiếng Boss nổ tung cái ẦM
+            GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossDie);
+
+            // 3. Tiếng Kèn Chiến Thắng Vang Lên (Tèn Tén Ten!)
+            GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.victory);
+        }
 
         if (anim != null) anim.SetBool("isDead", true);
-        
-        // Tắt va chạm để không làm vướng đường Player
+
         Collider2D coll = GetComponent<Collider2D>();
         if (coll != null) coll.enabled = false;
-
-        // Tắt thanh máu
         if (healthSlider != null) healthSlider.gameObject.SetActive(false);
 
-        // Chờ diễn anim xong rồi mới xóa Boss (Có thể chỉnh lại thời gian này)
-        Destroy(gameObject, 3f); 
+        Destroy(gameObject, 3f);
     }
 
     // =========================================================

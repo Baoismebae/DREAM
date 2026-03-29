@@ -108,17 +108,14 @@ public class SpringTrapAI : MonoBehaviour
     }
 
     // ================= LOGIC NHẬN SÁT THƯƠNG =================
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     public void TakeDamage(float damageAmount)
     {
         if (isDead) return;
 
         currentHealth -= damageAmount;
-        
-        if (healthSlider != null)
-        {
-            healthSlider.value = currentHealth;
-        }
-        
+        if (healthSlider != null) { healthSlider.value = currentHealth; }
+
         if (currentHealth <= 0)
         {
             Die();
@@ -126,16 +123,24 @@ public class SpringTrapAI : MonoBehaviour
         else
         {
             if (anim != null) anim.SetTrigger("Hurt");
+            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng rên khi bị đánh trúng
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobHurt);
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     void Die()
     {
-        if (isDead) return; // Bảo vệ để quái không chết 2 lần
+        if (isDead) return;
         isDead = true;
 
         if (anim != null) anim.SetBool("isDead", true);
-        
+
+        // 🌟 ĐÃ THÊM ÂM THANH: Tiếng nổ tung/bốc hơi khi chết
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobDie);
+
+        // ... (Phần logic rơi tiền và xóa object bên dưới giữ nguyên của bạn)
+
         // --- LOGIC RƠI TIỀN ---
         if (coinPrefab != null)
         {
@@ -172,27 +177,31 @@ public class SpringTrapAI : MonoBehaviour
         }
     }
 
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
     System.Collections.IEnumerator AttackSequence()
     {
         isAttacking = true;
-        
+
         // Gọi Trigger Attack
         if (anim != null) anim.SetTrigger("MeleeAttack");
 
+        // 🌟 ĐÃ THÊM ÂM THANH: Tiếng đớp/cắn của SpringTrap
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobBite);
+
         yield return new WaitForSeconds(0.3f);
-        
-        if (!isDead) 
+
+        if (!isDead)
         {
             float distance = Vector2.Distance(transform.position, player.position);
             if (distance <= stopDistance)
             {
                 Health playerHealth = player.GetComponent<Health>();
-                if (playerHealth != null) playerHealth.TakeDamage(enemyDamage); 
+                if (playerHealth != null) playerHealth.TakeDamage(enemyDamage);
             }
         }
 
         yield return new WaitForSeconds(attackCooldown);
-        isAttacking = false; 
+        isAttacking = false;
     }
 
     // ================= LOGIC DI CHUYỂN =================

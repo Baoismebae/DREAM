@@ -35,6 +35,9 @@ public class Health : MonoBehaviour
         else
         {
             if (anim != null) anim.SetTrigger("Hurt");
+
+            // ---> THÊM 1 DÒNG NÀY VÀO ĐÂY: Phát tiếng rên/đau <---
+            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.playerHurt);
         }
     }
 
@@ -49,7 +52,10 @@ public class Health : MonoBehaviour
     void Die()
     {
         isDead = true;
-        
+
+        // ---> THÊM 1 DÒNG NÀY VÀO ĐÂY: Phát tiếng gục ngã/chết <---
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.playerDie);
+
         // 1. Kích hoạt anim ngã xuống
         if (anim != null) anim.SetTrigger("Dead");
 
@@ -62,7 +68,7 @@ public class Health : MonoBehaviour
 
         // 4. Xử lý Game Over (Ví dụ: Chờ 2 giây rồi tải lại màn chơi)
         Debug.Log("Mage đã hy sinh!");
-        Invoke("ReloadGame", 3f); // Gọi hàm ReloadGame sau 2 giây
+        Invoke("ReloadGame", 3f); // Gọi hàm ReloadGame sau 3 giây
     }
 
     void ReloadGame()

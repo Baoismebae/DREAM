@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement; // Thư viện bắt buộc để chuyển cảnh
+using UnityEngine.SceneManagement;
 
 public class Teleport : MonoBehaviour
 {
     [Header("Tên Map muốn chuyển tới")]
-    public string sceneName; 
+    public string sceneName;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -12,6 +12,13 @@ public class Teleport : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             Debug.Log("Đang chuyển sang map: " + sceneName);
+
+            // ---> THÊM 1 DÒNG NÀY VÀO ĐÂY: Phát tiếng dịch chuyển <---
+            if (GlobalAudioManager.Instance != null)
+            {
+                GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.teleport);
+            }
+
             SceneManager.LoadScene(sceneName);
         }
     }

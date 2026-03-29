@@ -175,7 +175,10 @@ public class PlayerAttack : MonoBehaviour
     {
         if (movementScript != null) movementScript.isAttacking = true;
         
-        TriggerAttackAnimation(); 
+        TriggerAttackAnimation();
+
+        // ---> THÊM 1 DÒNG NÀY VÀO ĐÂY: Phát tiếng chém kiếm <---
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.attackMelee);
 
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(enemyLayers);
@@ -210,8 +213,11 @@ public class PlayerAttack : MonoBehaviour
 
     void Shoot()
     {
-        TriggerAttackAnimation(); 
-        
+        TriggerAttackAnimation();
+
+        // ---> THÊM 1 DÒNG NÀY VÀO ĐÂY: Phát tiếng chưởng/bắn xa <---
+        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.attackMagic);
+
         if (bulletPrefab != null && firePoint != null)
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);

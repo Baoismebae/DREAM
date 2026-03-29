@@ -2,45 +2,63 @@
 
 public class SokobanAudioManager : MonoBehaviour
 {
+    // Biến Singleton để các script khác (Player, Crate, Manager) dễ dàng gọi đến
     public static SokobanAudioManager Instance;
 
-    [Header("Nguồn phát âm thanh (Kéo thả 2 AudioSource vào đây)")]
-    public AudioSource bgmSource; // Phát nhạc nền
-    public AudioSource sfxSource; // Phát hiệu ứng (bíp, rẹt rẹt...)
+    [Header("Nguồn phát (Kéo thả 2 AudioSource vào đây)")]
+    public AudioSource bgmSource; // Dành cho nhạc nền (cần tick Loop)
+    public AudioSource sfxSource; // Dành cho hiệu ứng âm thanh
 
-    [Header("File âm thanh (Kéo file .mp3 / .wav vào đây)")]
-    public AudioClip bgmMusic; // Nhạc nền minigame
-    public AudioClip moveSound; // Tiếng bước chân
-    public AudioClip pushSound; // Tiếng đẩy thùng
-    public AudioClip goalSound; // Tiếng thùng vào đích (Ting!)
-    public AudioClip winSound; // Tiếng thắng game (Tada!)
-    public AudioClip resetSound; // Tiếng reset
+    [Header("File âm thanh (Kéo thả file .mp3 / .wav vào đây)")]
+    public AudioClip bgmMusic;   // Nhạc nền lúc chơi Sokoban
+    public AudioClip moveSound;  // Tiếng bước chân
+    public AudioClip pushSound;  // Tiếng đẩy thùng
+    public AudioClip goalSound;  // Tiếng thùng vào đích (Ting!)
+    public AudioClip winSound;   // Tiếng thắng game
+    public AudioClip resetSound; // Tiếng khi bấm nút R hoặc Reset
 
     void Awake()
     {
-        Instance = this;
+        // Đảm bảo chỉ có 1 AudioManager tồn tại trong scene này
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Start()
     {
-        // Khi mở scene Sokoban, bật nhạc nền ngay lập tức
+        // 1. TÌM VÀ TẮT NHẠC NỀN CHẠY XUYÊN MAP
+        // Yêu cầu: Object giữ nhạc ở Map 1 phải được gán đúng Tag là "MapMusic"
+        GameObject mapMusic = GameObject.FindGameObjectWithTag("MapMusic");
+        if (mapMusic != null)
+        {
+            AudioSource mapAudioSource = mapMusic.GetComponent<AudioSource>();
+            if (mapAudioSource != null)
+            {
+                mapAudioSource.Stop(); // Tắt nhạc map ngoài
+            }
+        }
+
+        // 2. BẬT NHẠC NỀN CỦA MINIGAME SOKOBAN
         if (bgmMusic != null && bgmSource != null)
         {
             bgmSource.clip = bgmMusic;
             bgmSource.loop = true;
             bgmSource.Play();
         }
-
-        // TẮT NHẠC MAP 3 CŨ (Nếu nó lỡ chạy qua scene này)
-        // Tìm object chứa nhạc Map 3 (giả sử bạn đặt tên tag là "Map3Music" hoặc tên là "BGM_Map3")
-        // Nếu bạn bị hai nhạc đè nhau, hãy báo tôi để tôi viết thêm dòng tắt nhạc Map 3 nhé.
     }
 
-    // Hàm dùng chung để phát bất kỳ hiệu ứng nào
+    // 3. HÀM PHÁT HIỆU ỨNG ÂM THANH (Dùng chung cho mọi hành động)
     public void PlaySFX(AudioClip clip)
     {
         if (clip != null && sfxSource != null)
         {
+            // PlayOneShot giúp các âm thanh đè lên nhau một cách tự nhiên (không bị ngắt tiếng cũ)
             sfxSource.PlayOneShot(clip);
         }
     }

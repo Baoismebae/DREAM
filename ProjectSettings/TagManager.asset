@@ -11,6 +11,7 @@ TagManager:
   - door
   - Crate
   - Goal
+  - MapMusic
   layers:
   - Default
   - TransparentFX

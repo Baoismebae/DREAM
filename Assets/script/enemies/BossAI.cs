@@ -193,8 +193,7 @@ public class BossAI : MonoBehaviour
             yield return new WaitForSeconds(timeBetweenMeteors);
         }
         yield return new WaitForSeconds(1f);
-    }
-
+    } 
     // =========================================================
     // HỆ THỐNG MÁU & NHẬN SÁT THƯƠNG
     // =========================================================

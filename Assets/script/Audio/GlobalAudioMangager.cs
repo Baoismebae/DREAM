@@ -39,6 +39,20 @@ public class GlobalAudioManager : MonoBehaviour
     public AudioClip bossDie;          // Tiếng Boss chết nổ tung
     public AudioClip victory;          // Tiếng kèn chiến thắng
 
+    // ... (các Header cũ giữ nguyên) ...
+
+    [Header("--- SFX: TƯƠNG TÁC SHOP & ITEM ---")]
+    public AudioClip shopOpenSound;  // Tiếng mở shop/tiến lại gần bệ đá
+    public AudioClip buySuccessSound; // Tiếng mua đồ thành công (Keng keng!)
+    public AudioClip buyFailSound;    // Tiếng mua lỗi (hết tiền/đầy túi) (Bíp trầm)
+    // 3 âm thanh dùng đồ dưới đây bạn nên kéo file .mp3 vào ItemData, 
+    // nhưng nếu lười thì có thể kéo vào đây cũng được.
+    public AudioClip itemUseHeal;
+    public AudioClip itemUseSpeed;
+    public AudioClip itemUseShield;
+
+    // ... (các hàm PlaySFX giữ nguyên) ...
+
     void Awake()
     {
         // Bí quyết để nhạc đi xuyên suốt Map 1 -> 4

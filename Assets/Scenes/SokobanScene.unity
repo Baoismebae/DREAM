@@ -454,7 +454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28c95848eba28ee4cbd35be5a006b957, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SokobanManager
-  map3SceneName: Map3
+  map3SceneName: map 4
 --- !u!4 &489823654
 Transform:
   m_ObjectHideFlags: 0

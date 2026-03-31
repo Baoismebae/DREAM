@@ -129,6 +129,7 @@ public class AI : MonoBehaviour
     }
 
     // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ:
+    // TÌM ĐẾN HÀM NÀY VÀ THAY THẾ TOÀN BỘ NHÉ:
     void Die()
     {
         if (isDead) return;
@@ -136,17 +137,33 @@ public class AI : MonoBehaviour
 
         if (anim != null) anim.SetBool("isDead", true);
 
-        // 🌟 ĐÃ THÊM ÂM THANH: Tiếng nổ tung/bốc hơi khi chết
+        // Phát tiếng nổ tung/bốc hơi khi chết
         if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.mobDie);
 
-        // ... (Phần logic rơi tiền và xóa object bên dưới giữ nguyên của bạn)
+        // ==========================================
+        // KHÔI PHỤC LẠI LOGIC RƠI TIỀN BỊ MẤT
+        // ==========================================
+        if (coinPrefab != null)
+        {
+            int lootAmount = Random.Range(minCoins, maxCoins + 1);
+            for (int i = 0; i < lootAmount; i++)
+            {
+                GameObject coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);
 
-        // --- LOGIC RƠI TIỀN --- (Phần này giữ nguyên)
-        // -----------------------
+                // Cho đồng xu văng ra ngẫu nhiên cho đẹp
+                Rigidbody2D rb = coin.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    Vector2 scatter = new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f)).normalized;
+                    rb.AddForce(scatter * 0.5f, ForceMode2D.Impulse);
+                }
+            }
+        }
+        // ==========================================
 
-        GetComponent<Collider2D>().enabled = false;
-        if (healthSlider != null) healthSlider.gameObject.SetActive(false);
-        Destroy(gameObject, 1.375f); 
+        GetComponent<Collider2D>().enabled = false; // Tắt va chạm để không cản đường
+        if (healthSlider != null) healthSlider.gameObject.SetActive(false); // Tắt thanh máu
+        Destroy(gameObject, 1.375f); // Tiêu hủy cái xác sau 1 giây rưỡi
     }
 
     // ================= LOGIC TẤN CÔNG =================

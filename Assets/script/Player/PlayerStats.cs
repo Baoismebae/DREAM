@@ -14,10 +14,25 @@ public class PlayerStats : MonoBehaviour
 
     void Awake()
     {
-        instance = this;
-        inventory[ItemData.ItemType.Health] = 0;
-        inventory[ItemData.ItemType.Speed] = 0;
-        inventory[ItemData.ItemType.Shield] = 0;
+        // THẦN CHÚ GIỮ DỮ LIỆU QUA CÁC MAP
+        if (instance == null)
+        {
+            instance = this;
+
+            // Giữ lại nhân vật và toàn bộ chỉ số này khi qua map mới
+            DontDestroyOnLoad(gameObject);
+
+            // Chỉ khởi tạo túi đồ 1 lần duy nhất khi mới mở game
+            inventory[ItemData.ItemType.Health] = 0;
+            inventory[ItemData.ItemType.Speed] = 0;
+            inventory[ItemData.ItemType.Shield] = 0;
+        }
+        else
+        {
+            // Nếu qua Map 2 mà thấy có một con Player "mới" ở đó, hãy xóa nó đi
+            // Để giữ lại con Player "cũ" mang theo tiền từ Map 1 sang
+            Destroy(gameObject);
+        }
     }
 
     void Start()

@@ -18,7 +18,20 @@ public class UIManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
+        // Kiểm tra xem đã có UIManager nào tồn tại chưa
+        if (Instance == null)
+        {
+            Instance = this;
+
+            // THÊM DÒNG NÀY: Giữ cho HUDCanvas không bị hủy khi qua Map mới
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            // Nếu lỡ quay lại Map 1 và sinh ra thêm 1 cái HUDCanvas nữa thì hủy cái mới đi
+            // Đảm bảo trong game luôn chỉ có duy nhất 1 giao diện
+            Destroy(gameObject);
+        }
     }
 
     void Start()

@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 5676615763431764094}
   - component: {fileID: 4984326214070324705}
   - component: {fileID: 1522650481718206808}
-  - component: {fileID: 1032837610959433787}
-  - component: {fileID: 2741215111006047206}
   m_Layer: 0
   m_Name: headboard_7 (2)
   m_TagString: Untagged
@@ -179,35 +177,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0.0015412747, y: -0.06936515}
   m_Size: {x: 1.1387297, y: 1.0894285}
   m_Direction: 1
---- !u!114 &1032837610959433787
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6085739233086079298}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56f951ea4accd384292aaf9c4def4b32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemPrice
-  priceUI: {fileID: 4101794941969915158}
---- !u!114 &2741215111006047206
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6085739233086079298}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4f36c9e034962341bfa8a126807d0ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemShop
-  loaiMonDo: 0
-  giaTien: 10
-  giaTriCong: 20
-  thongBaoText: {fileID: 4101794941969915158}
 --- !u!1001 &8011903963626579125
 PrefabInstance:
   m_ObjectHideFlags: 0

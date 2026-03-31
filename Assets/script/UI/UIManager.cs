@@ -14,6 +14,8 @@ public class UIManager : MonoBehaviour
     public GameObject[] highlights;
     public TextMeshProUGUI[] quantityTexts;
 
+    private int selectedSlot = 0; // Biến nhớ xem đang chọn ô nào
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -21,7 +23,6 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
-        // Dọn sạch UI lúc mới vào game
         for (int i = 0; i < quantityTexts.Length; i++)
         {
             if (quantityTexts[i] != null) quantityTexts[i].text = "";
@@ -40,19 +41,16 @@ public class UIManager : MonoBehaviour
 
     void SelectSlot(int index)
     {
+        selectedSlot = index; // Lưu lại ô đang chọn
         for (int i = 0; i < highlights.Length; i++)
         {
             if (highlights[i] != null) highlights[i].SetActive(i == index);
         }
     }
 
-    // CHỈ CẬP NHẬT ĐÚNG CON SỐ, KHÔNG SPRITE RƯỜM RÀ
     public void UpdateCoinText(int coins)
     {
-        if (coinTextDisplay != null)
-        {
-            coinTextDisplay.text = coins.ToString();
-        }
+        if (coinTextDisplay != null) coinTextDisplay.text = coins.ToString();
     }
 
     public void UpdateInventorySlot(int slotIndex, Sprite itemSprite, int quantity)
@@ -65,9 +63,28 @@ public class UIManager : MonoBehaviour
                 itemIcons[slotIndex].color = Color.white;
                 itemIcons[slotIndex].enabled = true;
             }
-            if (quantityTexts[slotIndex] != null)
+            if (quantityTexts[slotIndex] != null) quantityTexts[slotIndex].text = quantity.ToString();
+        }
+    }
+
+    // --- 2 HÀM MỚI ĐỂ DÙNG ĐỒ ---
+    public int GetSelectedSlot()
+    {
+        return selectedSlot; // Trả về số thứ tự ô đang sáng
+    }
+
+    public void ConsumeItemUI(int slotIndex, int newQuantity)
+    {
+        if (slotIndex >= 0 && slotIndex < itemIcons.Length)
+        {
+            if (newQuantity <= 0) // Nếu dùng hết sạch đồ
             {
-                quantityTexts[slotIndex].text = quantity.ToString();
+                if (itemIcons[slotIndex] != null) itemIcons[slotIndex].enabled = false; // Ẩn hình ảnh
+                if (quantityTexts[slotIndex] != null) quantityTexts[slotIndex].text = ""; // Xóa chữ số
+            }
+            else // Nếu vẫn còn dư
+            {
+                if (quantityTexts[slotIndex] != null) quantityTexts[slotIndex].text = newQuantity.ToString();
             }
         }
     }

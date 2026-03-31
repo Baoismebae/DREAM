@@ -4,7 +4,8 @@ public class Playermovement : MonoBehaviour
 {
     [Header("DI CHUYỂN")]
     public float Speed = 5f;
-    private float currentSpeed;
+    // --- ĐỔI THÀNH PUBLIC ĐỂ ITEM TĂNG TỐC CAN THIỆP ĐƯỢC ---
+    [HideInInspector] public float currentSpeed;
 
     [Header("CẦU THANG NGANG")]
     [HideInInspector]
@@ -22,16 +23,14 @@ public class Playermovement : MonoBehaviour
     private Vector2 movement;
 
     private float footstepTimer = 0f;
-    public float footstepDelay = 1f; // Tốc độ phát tiếng bước chân (chỉnh cho khớp với animation)
+    public float footstepDelay = 1f;
 
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
 
-        // QUAN TRỌNG: Khóa xoay để tránh vật lý làm nhân vật quay tròn
         rb.freezeRotation = true;
-        // Đảm bảo không bị trọng lực kéo xuống trong game Top-down
         rb.gravityScale = 0f;
 
         currentSpeed = Speed;
@@ -46,17 +45,14 @@ public class Playermovement : MonoBehaviour
             return;
         }
 
-        // 1. Lấy Input
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
-        // 2. Xử lý cầu thang
         if (onHorizontalStairs && movement.x != 0)
         {
             movement.y = movement.x * stairSlope;
         }
 
-        // 3. Animation (Đã xóa bỏ đoạn trùng lặp)
         if (movement.x != 0 || movement.y != 0)
         {
             ani.SetFloat("Horizontal", movement.x);
@@ -64,29 +60,20 @@ public class Playermovement : MonoBehaviour
         }
         ani.SetFloat("Speed", movement.sqrMagnitude);
 
-        if (movement.x != 0 || movement.y != 0)
-        {
-            ani.SetFloat("Horizontal", movement.x);
-            ani.SetFloat("Vertical", movement.y);
-        }
-        
-        // Riêng Speed thì vẫn phải gửi liên tục để Animator biết lúc nào nên đứng im
-        ani.SetFloat("Speed", movement.magnitude);
-
         if (movement.x > 0)
         {
-            sr.flipX = false; // Quay sang phải
+            sr.flipX = false;
         }
         else if (movement.x < 0)
         {
-            sr.flipX = true;  // Quay sang trái
-        }
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-        Debug.Log("Tọa độ X khi vừa đổi hướng: " + transform.position.x);
+            sr.flipX = true;
         }
 
-        // Giả sử biến di chuyển của bạn là moveX, moveY hoặc rb.velocity.magnitude
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            Debug.Log("Tọa độ X khi vừa đổi hướng: " + transform.position.x);
+        }
+
         bool isMoving = (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0 || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0);
 
         if (isMoving)
@@ -95,18 +82,17 @@ public class Playermovement : MonoBehaviour
             if (footstepTimer <= 0f)
             {
                 if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.footstep);
-                footstepTimer = footstepDelay; // Reset đồng hồ
+                footstepTimer = footstepDelay;
             }
         }
         else
         {
-            footstepTimer = 0f; // Dừng lại là reset ngay để bước tiếp theo kêu luôn
+            footstepTimer = 0f;
         }
     }
 
     void LateUpdate()
     {
-        // Sắp xếp lớp hiển thị
         sr.sortingOrder = (int)(-transform.position.y * 100);
     }
 
@@ -116,12 +102,10 @@ public class Playermovement : MonoBehaviour
 
         if (movement.sqrMagnitude > 0.01f)
         {
-            // Dùng gán trực tiếp để tránh bị cộng dồn lực gây teleport/văng xa
             rb.linearVelocity = movement.normalized * currentSpeed;
         }
         else
         {
-            // Dừng hẳn để không bị trôi (Drifting)
             rb.linearVelocity = Vector2.zero;
         }
     }
@@ -131,15 +115,14 @@ public class Playermovement : MonoBehaviour
         if (collision.CompareTag("Stairs"))
         {
             onHorizontalStairs = true;
-            
-            // 🌟 ĐIỂM MẤU CHỐT: Lấy độ dốc từ chính cái cầu thang đang dẫm lên
+
             Stair currentStair = collision.GetComponent<Stair>();
             if (currentStair != null)
             {
-                stairSlope = currentStair.slope; // Cập nhật độ dốc mới cho Mage
+                stairSlope = currentStair.slope;
             }
 
-            currentSpeed = Speed * 0.8f; 
+            currentSpeed = Speed * 0.8f;
         }
     }
 

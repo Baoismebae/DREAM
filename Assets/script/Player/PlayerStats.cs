@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -24,6 +25,84 @@ public class PlayerStats : MonoBehaviour
         UpdateCoinUI();
     }
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            UseSelectedItem();
+        }
+    }
+
+    private void UseSelectedItem()
+    {
+        if (UIManager.Instance == null) return;
+
+        int currentSlot = UIManager.Instance.GetSelectedSlot();
+        ItemData.ItemType typeToUse = GetItemTypeBySlot(currentSlot);
+
+        if (inventory.ContainsKey(typeToUse) && inventory[typeToUse] > 0)
+        {
+            inventory[typeToUse]--;
+            UIManager.Instance.ConsumeItemUI(currentSlot, inventory[typeToUse]);
+            ApplyItemEffect(typeToUse);
+        }
+        else
+        {
+            Debug.Log("Ô này đang trống hoặc đã dùng hết đồ rồi!");
+        }
+    }
+
+    private void ApplyItemEffect(ItemData.ItemType type)
+    {
+        switch (type)
+        {
+            case ItemData.ItemType.Health:
+                Debug.Log("Ực ực... Đã dùng LỌ HỒI MÁU!");
+                // Hồi 30 máu (Cậu có thể sửa số 30 tùy ý)
+                GetComponent<Health>().Heal(30f);
+                break;
+
+            case ItemData.ItemType.Speed:
+                Debug.Log("Vù vù... Đã dùng THỊT TĂNG TỐC!");
+                StartCoroutine(SpeedBoostCoroutine());
+                break;
+
+            case ItemData.ItemType.Shield:
+                Debug.Log("Keng... Đã ăn CHÁO BẬT KHIÊN!");
+                StartCoroutine(ShieldCoroutine());
+                break;
+        }
+    }
+
+    private IEnumerator SpeedBoostCoroutine()
+    {
+        Playermovement pm = GetComponent<Playermovement>();
+        if (pm != null)
+        {
+            pm.Speed *= 1.5f; // Tăng gấp rưỡi tốc độ
+            pm.currentSpeed = pm.Speed;
+        }
+
+        yield return new WaitForSeconds(5f); // Chạy nhanh trong 5 giây
+
+        if (pm != null)
+        {
+            pm.Speed /= 1.5f; // Trả lại bình thường
+            pm.currentSpeed = pm.Speed;
+        }
+    }
+
+    private IEnumerator ShieldCoroutine()
+    {
+        Health health = GetComponent<Health>();
+
+        if (health != null) health.isInvincible = true; // Bật bất tử
+
+        yield return new WaitForSeconds(3f); // Bất tử trong 3 giây
+
+        if (health != null) health.isInvincible = false; // Tắt bất tử
+    }
+
     public void AddCoins(int amount)
     {
         currentCoins += amount;
@@ -43,10 +122,7 @@ public class PlayerStats : MonoBehaviour
 
     void UpdateCoinUI()
     {
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.UpdateCoinText(currentCoins);
-        }
+        if (UIManager.Instance != null) UIManager.Instance.UpdateCoinText(currentCoins);
     }
 
     public bool TryBuyItem(ItemData itemData)
@@ -57,9 +133,7 @@ public class PlayerStats : MonoBehaviour
             int slotIndex = GetSlotIndex(itemData.type);
 
             if (UIManager.Instance != null)
-            {
                 UIManager.Instance.UpdateInventorySlot(slotIndex, itemData.itemIcon, inventory[itemData.type]);
-            }
 
             if (GlobalAudioManager.Instance != null)
                 GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.buySuccessSound);
@@ -77,10 +151,21 @@ public class PlayerStats : MonoBehaviour
     {
         switch (type)
         {
-            case ItemData.ItemType.Health: return 0; // Ô số 1 (Slot 1)
-            case ItemData.ItemType.Speed: return 1;  // Ô số 2 (Slot 2)
-            case ItemData.ItemType.Shield: return 2; // Ô số 3 (Slot 3)
-            default: return 3;                       // Ô số 4 (Slot 4)
+            case ItemData.ItemType.Health: return 0;
+            case ItemData.ItemType.Speed: return 1;
+            case ItemData.ItemType.Shield: return 2;
+            default: return 3;
+        }
+    }
+
+    private ItemData.ItemType GetItemTypeBySlot(int slot)
+    {
+        switch (slot)
+        {
+            case 0: return ItemData.ItemType.Health;
+            case 1: return ItemData.ItemType.Speed;
+            case 2: return ItemData.ItemType.Shield;
+            default: return ItemData.ItemType.Health;
         }
     }
 }

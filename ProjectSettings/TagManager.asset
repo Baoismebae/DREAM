@@ -12,6 +12,7 @@ TagManager:
   - Crate
   - Goal
   - MapMusic
+  - SpawnPoint
   layers:
   - Default
   - TransparentFX

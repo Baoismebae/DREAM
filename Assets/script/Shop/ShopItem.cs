@@ -47,7 +47,7 @@ public class ShopItem : MonoBehaviour
         else
         {
             // Tiền không đủ hoặc túi đầy
-            ShopManager.Instance.UpdateBoard("NOT ENOUGH COINS!");
+            ShopManager.Instance.UpdateBoard("NOT ENOUGH COINS :(");
         }
     }
 
@@ -59,7 +59,7 @@ public class ShopItem : MonoBehaviour
             isPlayerInRange = true;
             if (ShopManager.Instance != null && itemData != null)
             {
-                ShopManager.Instance.UpdateBoard("Press [ E ] to buy " + itemData.cost);
+                ShopManager.Instance.UpdateBoard("Press [ E ] to buy");
             }
         }
     }

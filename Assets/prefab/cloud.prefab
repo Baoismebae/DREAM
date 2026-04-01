@@ -242,7 +242,7 @@ MonoBehaviour:
   detectionRange: 6.27
   bullet: {fileID: 3685909861142717615, guid: 45144937bf8afc44f8640de392efb024, type: 3}
   bulletParent: {fileID: 2310655025901064555}
-  player: {fileID: 0}
+  player: {fileID: 3091582388991526769, guid: f48ba878eb5c6454e93fbc9d821a579b, type: 3}
   healthSlider: {fileID: 8424094099567628512}
   maxHealth: 50
   coinPrefab: {fileID: 7969977241795108594, guid: 59f114a5049f7ff4492a8f7d8d18ed36, type: 3}

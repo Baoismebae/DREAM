@@ -9,7 +9,7 @@ public class Explosion : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.Q))
+        if (Input.GetKey(KeyCode.E))
         {
             CameraShakerHandler.Shake(explosionShakeData);
         }

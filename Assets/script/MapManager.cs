@@ -1,23 +1,63 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
+using Unity.Cinemachine;
 
 public class MapManager : MonoBehaviour
 {
-    void Start()
+    void OnEnable()
     {
-        // 1. Tìm con Mage (đối tượng đã dùng DontDestroyOnLoad từ Map 1)
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        // 2. Kiểm tra xem trước đó có yêu cầu "điểm đến" nào không
-        if (player != null && !string.IsNullOrEmpty(SceneTransition.targetSpawnPoint))
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!string.IsNullOrEmpty(SceneTransition.targetSpawnPoint))
         {
-            // 3. Tìm cái Object trống có tên chính xác như yêu cầu (ví dụ: "Diem_Vao_Cua")
-            GameObject spawnPoint = GameObject.Find(SceneTransition.targetSpawnPoint);
+            StartCoroutine(TeleportPlayer());
+        }
+    }
 
-            if (spawnPoint != null)
+    IEnumerator TeleportPlayer()
+    {
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject spawnPoint = GameObject.Find(SceneTransition.targetSpawnPoint);
+
+        if (player != null && spawnPoint != null)
+        {
+            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null) rb.linearVelocity = Vector2.zero;
+
+            // 1. Dịch chuyển Player
+            player.transform.position = new Vector3(
+                spawnPoint.transform.position.x, 
+                spawnPoint.transform.position.y, 
+                0f
+            );
+
+            // ==========================================
+            // 🌟 2. CHỮA BỆNH MẤT TRÍ NHỚ CHO CAMERA
+            // ==========================================
+            // Tìm cái Camera trong Map 3
+            CinemachineVirtualCamera vCam = FindFirstObjectByType<CinemachineVirtualCamera>();
+            
+            if (vCam != null)
             {
-                // 4. Đưa Mage tới đúng tọa độ của điểm đó
-                player.transform.position = spawnPoint.transform.position;
+                // Ép nó đi theo con Player vừa mới chuyển sang
+                vCam.Follow = player.transform;
+                Debug.Log("🎥 Camera đã khóa mục tiêu vào Player mới!");
             }
+            // ==========================================
+
+            SceneTransition.targetSpawnPoint = "";
         }
     }
 }

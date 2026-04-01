@@ -1,24 +1,30 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using FirstGearGames.SmoothCameraShaker;
 
 public class BossAI : MonoBehaviour
 {
+    [Header("QUẢN LÝ MÔI TRƯỜNG")]
+    public EnvironmentManager envManager;
+    public ShakeData deathShakeData;
+    public GameObject portal;
     public enum BossState { Idle, Skill1_Melee, Skill2_Spiral, Skill3_Meteor }
+
     [Header("TRẠNG THÁI HIỆN TẠI")]
     public BossState currentState;
 
     [Header("THÔNG SỐ DI CHUYỂN")]
     public float walkSpeed = 2f;
     public float dashSpeed = 10f;
-    public float restTime = 2f; // Thời gian nghỉ giữa các chiêu
+    public float restTime = 2f;
 
     [Header("MÁU & BỊ THƯƠNG")]
-    public float maxHealth = 100f; // Boss thì máu phải trâu!
+    public float maxHealth = 100f;
     private float currentHealth;
     private bool isDead = false;
-    public Slider healthSlider; // Kéo Slider thanh máu vào đây
-    private Vector3 healthBarScale; // Lưu kích thước để chống lật thanh máu
+    public Slider healthSlider; 
+    private Vector3 healthBarScale; 
 
     [Header("CHIÊU 1: CẬN CHIẾN")]
     public float meleeAttackRange = 1.5f;
@@ -47,25 +53,21 @@ public class BossAI : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         sr = GetComponentInChildren<SpriteRenderer>();
         
-        // --- SETUP MÁU & THANH MÁU ---
         currentHealth = maxHealth;
         if (healthSlider != null)
         {
             healthSlider.maxValue = maxHealth;
             healthSlider.value = currentHealth;
-            healthBarScale = healthSlider.transform.localScale; // Lưu lại scale gốc
+            healthBarScale = healthSlider.transform.localScale;
         }
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null) player = p.transform;
 
-        // Bắt đầu vòng lặp chiến đấu của Boss
         StartCoroutine(BossLogicLoop());
     }
 
-    // =========================================================
-    // VÒNG LẶP CHIẾN ĐẤU CHÍNH (TRÍ NÃO CỦA BOSS)
-    // =========================================================
+
     IEnumerator BossLogicLoop()
     {
         yield return new WaitForSeconds(1f);
@@ -84,9 +86,7 @@ public class BossAI : MonoBehaviour
         }
     }
 
-    // =========================================================
-    // CÁC CHIÊU THỨC CỦA BOSS
-    // =========================================================
+   
     IEnumerator Skill1_MeleeAttack()
     {
         currentState = BossState.Skill1_Melee;
@@ -107,7 +107,6 @@ public class BossAI : MonoBehaviour
             LookAtTarget(player.position);
             if (anim != null) anim.SetTrigger("MeleeAttack");
 
-            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng Boss vung vũ khí nặng chém xuống
             if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossMelee);
 
             yield return new WaitForSeconds(0.3f);
@@ -125,18 +124,14 @@ public class BossAI : MonoBehaviour
         currentState = BossState.Skill2_Spiral;
         if (mapCenter == null) yield break;
 
-        // ==========================================
-        // 1. LƯỚT RA GIỮA MAP (CÓ CẦU DAO TỰ NGẮT)
-        // ==========================================
         float dashTimer = 0f;
-        float dashTimeout = 2.5f; // Tối đa 2.5 giây để lướt. Chạy không kịp cũng phải đứng lại bắn!
+        float dashTimeout = 2.5f;
 
         if (anim != null) anim.SetBool("isFlying", true);
 
-        // Thêm điều kiện dashTimer < dashTimeout vào vòng lặp
         while (Vector2.Distance(transform.position, mapCenter.position) > 0.1f && dashTimer < dashTimeout)
         {
-            dashTimer += Time.deltaTime; // Đồng hồ đếm giờ chạy
+            dashTimer += Time.deltaTime;
             MoveTowardsTarget(mapCenter.position, dashSpeed); 
             yield return null;
         }
@@ -144,11 +139,6 @@ public class BossAI : MonoBehaviour
         if (anim != null) anim.SetBool("isFlying", false);
 
         yield return new WaitForSeconds(0.5f);
-
-        // ==========================================
-        // 2. TÍNH TOÁN GÓC BẮN 360 ĐỘ (Giữ nguyên của bạn)
-        // ==========================================
-        // ... (phần trên lướt ra giữa map giữ nguyên) ...
 
         float angleStep = 360f / bulletsPerWave;
         float spiralShift = 10f;
@@ -160,7 +150,6 @@ public class BossAI : MonoBehaviour
         {
             if (anim != null) anim.SetTrigger("CastSpell");
 
-            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng xoẹt xoẹt mỗi khi nhả một vòng đạn (Không để trong vòng for j nhé!)
             if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossSpiralShoot);
 
             for (int j = 0; j < bulletsPerWave; j++)
@@ -185,7 +174,6 @@ public class BossAI : MonoBehaviour
 
         for (int i = 0; i < meteorCount; i++)
         {
-            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng thiên thạch rớt ầm ầm (Lặp lại mỗi lần rớt 1 cục)
             if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossMeteor);
 
             Vector2 randomDropPos = (Vector2)player.position + Random.insideUnitCircle * dropRadius;
@@ -194,9 +182,7 @@ public class BossAI : MonoBehaviour
         }
         yield return new WaitForSeconds(1f);
     } 
-    // =========================================================
-    // HỆ THỐNG MÁU & NHẬN SÁT THƯƠNG
-    // =========================================================
+    
     public void TakeDamage(float damageAmount)
     {
         if (isDead) return;
@@ -210,7 +196,6 @@ public class BossAI : MonoBehaviour
         }
         else
         {
-            // 🌟 ĐÃ THÊM ÂM THANH: Tiếng Boss rên rỉ khi trúng đòn (dù bị giật mình hay không vẫn kêu)
             if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossHurt);
 
             bool isMoving = false;
@@ -225,7 +210,6 @@ public class BossAI : MonoBehaviour
             }
             else
             {
-                // Nếu đang vung kiếm hoặc niệm phép -> Bật Giáp Bá Thể (Chỉ chớp nháy, không giật mình)
                 if (sr != null) StartCoroutine(FlashWhite());
             }
         }
@@ -243,16 +227,12 @@ public class BossAI : MonoBehaviour
         isDead = true;
         StopAllCoroutines();
 
-        // 🌟 ĐÃ THÊM ÂM THANH: Chuỗi sự kiện âm thanh chiến thắng
         if (GlobalAudioManager.Instance != null)
         {
-            // 1. Tắt nhạc nền đánh Boss
             if (GlobalAudioManager.Instance.bgmSource != null) GlobalAudioManager.Instance.bgmSource.Stop();
 
-            // 2. Tiếng Boss nổ tung cái ẦM
             GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.bossDie);
 
-            // 3. Tiếng Kèn Chiến Thắng Vang Lên (Tèn Tén Ten!)
             GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.victory);
         }
 
@@ -262,12 +242,24 @@ public class BossAI : MonoBehaviour
         if (coll != null) coll.enabled = false;
         if (healthSlider != null) healthSlider.gameObject.SetActive(false);
 
+        if (deathShakeData != null)
+        {
+            CameraShakerHandler.Shake(deathShakeData);
+        }
+
+        if (envManager != null)
+        {
+            envManager.OnBossDefeated();
+        }
+
+        if (portal != null)
+        {
+            portal.SetActive(true);
+        }
+        
         Destroy(gameObject, 3f);
     }
 
-    // =========================================================
-    // HÀM HỖ TRỢ DI CHUYỂN, LẬT MẶT & CHỐNG LẬT THANH MÁU
-    // =========================================================
     void MoveTowardsTarget(Vector2 target, float speed)
     {
         transform.position = Vector2.MoveTowards(transform.position, target, speed * Time.deltaTime);
@@ -284,7 +276,6 @@ public class BossAI : MonoBehaviour
 
     void LateUpdate()
     {
-        // Ép thanh máu luôn hiển thị thẳng, bất kể Boss quay đầu đi đâu
         if (healthSlider != null)
         {
             healthSlider.transform.localScale = new Vector3(

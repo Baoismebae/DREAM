@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement; // BẮT BUỘC: Thêm thư viện quản lý Scene
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
+
+    [Header("Bật/Tắt UI theo Scene")]
+    // Kéo cái object chứa toàn bộ UI (hoặc kéo thẳng cái Canvas) vào đây
+    public GameObject mainUIContainer;
 
     [Header("UI Tiền")]
     public TextMeshProUGUI coinTextDisplay;
@@ -22,10 +27,36 @@ public class UIManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject); // Giữ UI không bị mất khi qua map
+
+            // Đăng ký sự kiện: Lắng nghe mỗi khi load xong 1 Scene mới
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Gỡ sự kiện khi object bị hủy để tránh lỗi
+        if (Instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+    }
+
+    // HÀM MỚI: Tự động chạy mỗi khi chuyển Map
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Nhớ đổi chữ "SokobanScene" thành tên chính xác của Scene Sokoban của Aly nhé!
+        if (scene.name == "SokobanScene")
+        {
+            if (mainUIContainer != null) mainUIContainer.SetActive(false); // Giấu UI đi
+        }
+        else
+        {
+            if (mainUIContainer != null) mainUIContainer.SetActive(true); // Hiện UI lại ở Map khác
         }
     }
 

@@ -23,7 +23,6 @@ public class SokobanManager : MonoBehaviour
 
     void Update()
     {
-        // Phím tắt R để Reset Scene
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetGame();
@@ -45,10 +44,8 @@ public class SokobanManager : MonoBehaviour
         Debug.Log("Thắng game!");
         GameManager.isSokobanSolved = true;
 
-        // Phát nhạc thắng
         if (SokobanAudioManager.Instance != null) SokobanAudioManager.Instance.PlaySFX(SokobanAudioManager.Instance.winSound);
 
-        // Trì hoãn 1 giây rồi mới về map 3 để nghe nhạc
         StartCoroutine(DelayLoadScene(map3SceneName, 1f));
     }
 

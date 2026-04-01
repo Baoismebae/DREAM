@@ -5,37 +5,42 @@ public class ShopManager : MonoBehaviour
 {
     public static ShopManager Instance;
 
-    [Header("UI Bảng Trắng")]
-    public TextMeshProUGUI boardText;
+    [Header("UI Bảng Hướng Dẫn")]
+    public TextMeshProUGUI boardText; // Nơi chứa dòng chữ "WELCOME :3"
 
-    void Awake()
+    private void Awake()
     {
-        Instance = this;
-    }
-
-    void Start()
-    {
-        UpdateBoard("WELCOME :3");
-    }
-
-    public void UpdateBoard(string message)
-    {
-        boardText.text = message;
-    }
-
-    // Hàm mới dùng ItemData
-    public void TryBuyItem(ItemData itemToBuy)
-    {
-        // Nhờ PlayerStats xử lý mua (trừ tiền, thêm đồ, phát âm thanh)
-        bool success = PlayerStats.instance.TryBuyItem(itemToBuy);
-
-        if (success)
+        // Khởi tạo Singleton để các script khác dễ gọi
+        if (Instance == null)
         {
-            UpdateBoard("You bought\n" + itemToBuy.itemName + " :)");
+            Instance = this;
         }
         else
         {
-            UpdateBoard("Not enough coin :(");
+            Destroy(gameObject);
+        }
+    }
+
+    // Hàm để thay đổi dòng chữ trên bảng
+    public void UpdateBoard(string message)
+    {
+        if (boardText != null)
+        {
+            boardText.text = message;
+        }
+    }
+
+    // Hàm trung chuyển lệnh mua hàng sang cho PlayerStats
+    public bool TryBuyItem(ItemData data)
+    {
+        if (PlayerStats.instance != null)
+        {
+            return PlayerStats.instance.TryBuyItem(data);
+        }
+        else
+        {
+            Debug.LogError("Lỗi: Không tìm thấy PlayerStats!");
+            return false;
         }
     }
 }

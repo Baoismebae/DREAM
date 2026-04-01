@@ -14,22 +14,17 @@ public class UIManager : MonoBehaviour
     public GameObject[] highlights;
     public TextMeshProUGUI[] quantityTexts;
 
-    private int selectedSlot = 0; // Biến nhớ xem đang chọn ô nào
+    private int selectedSlot = 0;
 
     void Awake()
     {
-        // Kiểm tra xem đã có UIManager nào tồn tại chưa
         if (Instance == null)
         {
             Instance = this;
-
-            // THÊM DÒNG NÀY: Giữ cho HUDCanvas không bị hủy khi qua Map mới
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); // Giữ UI không bị mất khi qua map
         }
         else
         {
-            // Nếu lỡ quay lại Map 1 và sinh ra thêm 1 cái HUDCanvas nữa thì hủy cái mới đi
-            // Đảm bảo trong game luôn chỉ có duy nhất 1 giao diện
             Destroy(gameObject);
         }
     }
@@ -54,7 +49,7 @@ public class UIManager : MonoBehaviour
 
     void SelectSlot(int index)
     {
-        selectedSlot = index; // Lưu lại ô đang chọn
+        selectedSlot = index;
         for (int i = 0; i < highlights.Length; i++)
         {
             if (highlights[i] != null) highlights[i].SetActive(i == index);
@@ -80,22 +75,21 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // --- 2 HÀM MỚI ĐỂ DÙNG ĐỒ ---
     public int GetSelectedSlot()
     {
-        return selectedSlot; // Trả về số thứ tự ô đang sáng
+        return selectedSlot;
     }
 
     public void ConsumeItemUI(int slotIndex, int newQuantity)
     {
         if (slotIndex >= 0 && slotIndex < itemIcons.Length)
         {
-            if (newQuantity <= 0) // Nếu dùng hết sạch đồ
+            if (newQuantity <= 0)
             {
-                if (itemIcons[slotIndex] != null) itemIcons[slotIndex].enabled = false; // Ẩn hình ảnh
-                if (quantityTexts[slotIndex] != null) quantityTexts[slotIndex].text = ""; // Xóa chữ số
+                if (itemIcons[slotIndex] != null) itemIcons[slotIndex].enabled = false;
+                if (quantityTexts[slotIndex] != null) quantityTexts[slotIndex].text = "";
             }
-            else // Nếu vẫn còn dư
+            else
             {
                 if (quantityTexts[slotIndex] != null) quantityTexts[slotIndex].text = newQuantity.ToString();
             }

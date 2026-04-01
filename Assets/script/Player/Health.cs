@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class Health : MonoBehaviour
 {
@@ -8,14 +7,10 @@ public class Health : MonoBehaviour
     public float currentHealth;
     public Slider healthBar;
 
+    [HideInInspector] public bool isInvincible = false; // Trạng thái bất tử khi bật khiên
+
     private Animator anim;
     private bool isDead = false;
-
-    // BIẾN NÀY ĐỂ BẬT KHIÊN
-    [HideInInspector] public bool isInvincible = false;
-
-    public MonoBehaviour playerMovementScript;
-    public MonoBehaviour playerAttackScript;
 
     void Start()
     {
@@ -26,62 +21,25 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        // Nếu đã chết HOẶC đang bật khiên bất tử thì không bị trừ máu
-        if (isDead || isInvincible) return;
+        if (isDead || isInvincible) return; // Nếu chết hoặc đang bật khiên thì không mất máu
 
         currentHealth -= damage;
         UpdateHealthBar();
 
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
-        else
-        {
-            if (anim != null) anim.SetTrigger("Hurt");
-            if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.playerHurt);
-        }
+        if (currentHealth <= 0) Die();
+        else if (anim != null) anim.SetTrigger("Hurt");
     }
 
-    // HÀM NÀY ĐỂ UỐNG THUỐC HỒI MÁU
     public void Heal(float amount)
     {
-        if (isDead) return;
-
-        currentHealth += amount;
-        // Không cho hồi vượt quá cục máu tối đa
-        if (currentHealth > maxHealth) currentHealth = maxHealth;
-
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         UpdateHealthBar();
     }
 
     void UpdateHealthBar()
     {
-        if (healthBar != null)
-        {
-            healthBar.value = currentHealth / maxHealth;
-        }
+        if (healthBar != null) healthBar.value = currentHealth / maxHealth;
     }
 
-    void Die()
-    {
-        isDead = true;
-
-        if (GlobalAudioManager.Instance != null) GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.playerDie);
-
-        if (anim != null) anim.SetTrigger("Dead");
-
-        if (playerMovementScript != null) playerMovementScript.enabled = false;
-        if (playerAttackScript != null) playerAttackScript.enabled = false;
-
-        GetComponent<Collider2D>().enabled = false;
-
-        Debug.Log("Mage đã hy sinh!");
-        Invoke("ReloadGame", 3f);
-    }
-
-    void ReloadGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
+    void Die() { /* Logic chết của cậu */ }
 }

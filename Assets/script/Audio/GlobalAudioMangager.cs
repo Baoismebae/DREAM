@@ -50,6 +50,7 @@ public class GlobalAudioManager : MonoBehaviour
     public AudioClip itemUseHeal;
     public AudioClip itemUseSpeed;
     public AudioClip itemUseShield;
+    public AudioClip useItemSound;
 
     // ... (các hàm PlaySFX giữ nguyên) ...
 

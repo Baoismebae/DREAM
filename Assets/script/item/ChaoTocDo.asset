@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ChaoTocDo
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "Ch\xE1o t\u1ED1c \u0111\u1ED9"
-  type: 1
+  type: 2
   cost: 10
   itemIcon: {fileID: 21300000, guid: 7ae90bfc6f0fb6e47a1a94612f2ea010, type: 3}
   duration: 10

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ThitPhongThu
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "Th\u1ECBt ph\xF2ng th\u1EE7"
-  type: 2
+  type: 3
   cost: 10
   itemIcon: {fileID: 21300000, guid: 6f4e336a72e02f94d9288c58d2891198, type: 3}
   duration: 10

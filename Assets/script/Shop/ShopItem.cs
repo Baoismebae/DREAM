@@ -2,17 +2,15 @@
 
 public class ShopItem : MonoBehaviour
 {
-    // Kéo file Data (ví dụ: file LoHoiMau) từ cửa sổ Project vào đây!
-    [Header("Item Info")]
-    public ItemData itemData;
+    [Header("Dữ liệu món hàng")]
+    public ItemData itemData; // Kéo thả file Thịt, Cháo, Máu vào đây
 
     private bool isPlayerInRange = false;
-    private bool isSold = false; // Trạng thái kiểm tra xem món đồ đã bị mua chưa
 
     void Update()
     {
-        // Thêm điều kiện !isSold để không cho mua lại món đã bán
-        if (isPlayerInRange && !isSold && Input.GetKeyDown(KeyCode.E))
+        // Bấm E để mua khi đứng gần
+        if (isPlayerInRange && Input.GetKeyDown(KeyCode.E))
         {
             AttemptPurchase();
         }
@@ -20,54 +18,59 @@ public class ShopItem : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (isPlayerInRange && !isSold)
+        // Click chuột để mua (phương án dự phòng)
+        if (isPlayerInRange)
         {
             AttemptPurchase();
         }
     }
 
-    // Tách riêng logic mua hàng ra một hàm để dùng chung cho cả phím E và Chuột
     private void AttemptPurchase()
     {
-        // Cập nhật hàm TryBuyItem bên ShopManager để trả về true/false
-        // true = Đủ tiền & Túi đồ còn chỗ trống -> Mua thành công
+        if (itemData == null)
+        {
+            Debug.LogWarning("Món đồ này chưa được gắn file ItemData!");
+            return;
+        }
+
+        if (ShopManager.Instance == null) return;
+
+        // Báo cho ShopManager xử lý mua hàng
         bool success = ShopManager.Instance.TryBuyItem(itemData);
 
         if (success)
         {
-            isSold = true;
-            isPlayerInRange = false; // Reset trạng thái để không lỗi bảng UI
-
-            // Cập nhật bảng thông báo báo hết hàng
-            ShopManager.Instance.UpdateBoard("SOLD OUT!");
-
-            // Tắt hình ảnh món đồ trên quầy (ẩn đi thay vì Destroy để tránh lỗi Missing Reference)
-            gameObject.SetActive(false);
+            // Mua thành công -> Hiện chữ báo cáo
+            ShopManager.Instance.UpdateBoard("BOUGHT " + itemData.itemName + ":)");
+            // Đã bỏ lệnh Destroy để đồ không bị mất khỏi bàn
         }
         else
         {
-            // Báo lỗi nếu không đủ tiền hoặc túi đầy
-            ShopManager.Instance.UpdateBoard("INVENTORY FULL / NO COINS!");
+            // Tiền không đủ hoặc túi đầy
+            ShopManager.Instance.UpdateBoard("NOT ENOUGH COINS!");
         }
     }
 
+    // BƯỚC VÀO VÙNG CẢM BIẾN
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && !isSold)
+        if (other.CompareTag("Player"))
         {
             isPlayerInRange = true;
-            // Bạn có thể lấy giá tiền từ itemData để hiển thị lên bảng luôn cho trực quan
-            ShopManager.Instance.UpdateBoard("Press [ E ] to buy - " + itemData.price + "G");
+            if (ShopManager.Instance != null && itemData != null)
+            {
+                ShopManager.Instance.UpdateBoard("Press [ E ] to buy " + itemData.cost);
+            }
         }
     }
 
+    // BƯỚC RA KHỎI VÙNG CẢM BIẾN
     void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = false;
-            // Chỉ trả về WELCOME nếu đồ chưa bị mua
-            if (!isSold)
+            if (ShopManager.Instance != null)
             {
                 ShopManager.Instance.UpdateBoard("WELCOME :3");
             }

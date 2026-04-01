@@ -12,16 +12,26 @@ public class PlayerStats : MonoBehaviour
     [Header("TÚI ĐỒ (INVENTORY)")]
     public Dictionary<ItemData.ItemType, int> inventory = new Dictionary<ItemData.ItemType, int>();
 
-    // --- ĐOẠN MỚI: CHỖ ĐỂ KÉO EFFECTS VÀO ---
     [Header("HIỆU ỨNG HẠT (VFX)")]
-    public GameObject healParticles;  // Kéo object HealFX vào đây
-    public GameObject speedParticles; // Kéo object SpeedFX vào đây
-    public GameObject shieldParticles;// Kéo object ShieldFX vào đây
-    // --------------------------------------
+    public GameObject healFX;   // Kéo object Aura xanh vào đây
+    public GameObject speedFX;  // Kéo object Trail xanh lam vào đây
+    public GameObject shieldFX; // Kéo object Hào quang trắng vào đây
 
     void Awake()
     {
-        instance = this;
+        // Thần chú giữ dữ liệu xuyên không gian
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return; // Tránh lỗi chạy đè code
+        }
+
+        // Khởi tạo túi đồ
         inventory[ItemData.ItemType.Health] = 0;
         inventory[ItemData.ItemType.Speed] = 0;
         inventory[ItemData.ItemType.Shield] = 0;
@@ -31,118 +41,138 @@ public class PlayerStats : MonoBehaviour
     {
         UpdateCoinUI();
 
-        // Đảm bảo lúc đầu game các hiệu ứng đều tắt
-        if (healParticles != null) healParticles.SetActive(false);
-        if (speedParticles != null) speedParticles.SetActive(false);
-        if (shieldParticles != null) shieldParticles.SetActive(false);
+        // Đảm bảo tắt hết các hiệu ứng lúc mới vào game
+        if (healFX != null) healFX.SetActive(false);
+        if (speedFX != null) speedFX.SetActive(false);
+        if (shieldFX != null) shieldFX.SetActive(false);
     }
 
     void Update()
     {
+        // LẮNG NGHE PHÍM CÁCH (SPACE) ĐỂ DÙNG ĐỒ
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            UseSelectedItem();
+            UseItem();
         }
     }
 
-    private void UseSelectedItem()
+    private void UseItem()
     {
         if (UIManager.Instance == null) return;
 
-        int currentSlot = UIManager.Instance.GetSelectedSlot();
-        ItemData.ItemType typeToUse = GetItemTypeBySlot(currentSlot);
+        int selectedSlot = UIManager.Instance.GetSelectedSlot();
+        ItemData.ItemType type = GetItemTypeBySlot(selectedSlot);
 
-        if (inventory.ContainsKey(typeToUse) && inventory[typeToUse] > 0)
+        // Nếu trong túi đang có món đồ thuộc ô đang chọn
+        if (inventory.ContainsKey(type) && inventory[type] > 0)
         {
-            inventory[typeToUse]--;
-            UIManager.Instance.ConsumeItemUI(currentSlot, inventory[typeToUse]);
-            ApplyItemEffect(typeToUse);
+            inventory[type]--; // Trừ 1 món đi
+            UIManager.Instance.ConsumeItemUI(selectedSlot, inventory[type]); // Báo UIManager trừ số
+
+            ApplyEffect(type); // Kích hoạt phép thuật
+
+            // Phát âm thanh uống/nhai
+            if (GlobalAudioManager.Instance != null && GlobalAudioManager.Instance.useItemSound != null)
+            {
+                GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.useItemSound);
+            }
         }
         else
         {
-            Debug.Log("Ô này đang trống hoặc đã dùng hết đồ rồi!");
+            Debug.Log("Ô này đang trống hoặc đã dùng hết đồ!");
         }
     }
 
-    private void ApplyItemEffect(ItemData.ItemType type)
+    private void ApplyEffect(ItemData.ItemType type)
     {
         switch (type)
         {
             case ItemData.ItemType.Health:
-                Debug.Log("Ực ực... Đã dùng LỌ HỒI MÁU!");
-                GetComponent<Health>().Heal(30f);
-
-                // --- BẬT VFX HỒI MÁU ---
-                if (healParticles != null)
-                {
-                    healParticles.SetActive(true);
-                    // Hồi máu chỉ là 1 cú nổ, nên tắt nó sau 1.5 giây
-                    Invoke("StopHealVFX", 1.5f);
-                }
+                Health h = GetComponent<Health>();
+                if (h != null) h.Heal(30f); // Cộng máu
+                StartCoroutine(TriggerVFX(healFX, 1.5f));
                 break;
 
             case ItemData.ItemType.Speed:
-                Debug.Log("Vù vù... Đã dùng THỊT TĂNG TỐC!");
-                StartCoroutine(SpeedBoostCoroutine());
+                StartCoroutine(SpeedRoutine()); // Tăng tốc
                 break;
 
             case ItemData.ItemType.Shield:
-                Debug.Log("Keng... Đã ăn CHÁO BẬT KHIÊN!");
-                StartCoroutine(ShieldCoroutine());
+                StartCoroutine(ShieldRoutine()); // Bật khiên
                 break;
         }
     }
 
-    // Hàm phụ trợ để tắt hiệu ứng hồi máu
-    private void StopHealVFX()
+    // ==========================================
+    // CÁC COROUTINE ĐIỀU KHIỂN THỜI GIAN & HIỆU ỨNG
+    // ==========================================
+
+    // Hiệu ứng hồi máu (Chỉ nháy lên 1.5s rồi tắt)
+    private IEnumerator TriggerVFX(GameObject vfx, float time)
     {
-        if (healParticles != null) healParticles.SetActive(false);
+        if (vfx != null)
+        {
+            vfx.SetActive(false); // Tắt trước để reset
+            vfx.SetActive(true);  // Bật lên
+
+            // Ép hệ thống hạt phải xịt ra (Sửa lỗi tàng hình)
+            ParticleSystem ps = vfx.GetComponent<ParticleSystem>();
+            if (ps != null) ps.Play();
+
+            yield return new WaitForSeconds(time);
+            vfx.SetActive(false); // Hết thời gian thì tắt đi
+        }
     }
 
-    private IEnumerator SpeedBoostCoroutine()
+    // Ăn Thịt chạy nhanh trong 5s
+    private IEnumerator SpeedRoutine()
     {
         Playermovement pm = GetComponent<Playermovement>();
         if (pm != null)
         {
-            // --- BẬT VFX TỐC ĐỘ ---
-            if (speedParticles != null) speedParticles.SetActive(true);
+            if (speedFX != null)
+            {
+                speedFX.SetActive(false);
+                speedFX.SetActive(true);
+                ParticleSystem ps = speedFX.GetComponent<ParticleSystem>();
+                if (ps != null) ps.Play(); // Ép xịt hạt
+            }
 
-            pm.Speed *= 1.5f;
-            pm.currentSpeed = pm.Speed;
-        }
+            pm.currentSpeed = pm.Speed * 1.8f; // Tăng gần gấp đôi tốc độ
 
-        yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(5f); // Đếm ngược 5 giây
 
-        if (pm != null)
-        {
-            // --- TẮT VFX TỐC ĐỘ ---
-            if (speedParticles != null) speedParticles.SetActive(false);
-
-            pm.Speed /= 1.5f;
-            pm.currentSpeed = pm.Speed;
+            pm.currentSpeed = pm.Speed; // Hết 5s trả lại tốc độ cũ
+            if (speedFX != null) speedFX.SetActive(false);
         }
     }
 
-    private IEnumerator ShieldCoroutine()
+    // Uống cháo bật Khiên bất tử trong 3s
+    private IEnumerator ShieldRoutine()
     {
-        Health health = GetComponent<Health>();
-
-        if (health != null)
+        Health h = GetComponent<Health>();
+        if (h != null)
         {
-            // --- BẬT VFX KHIÊN ---
-            if (shieldParticles != null) shieldParticles.SetActive(true);
-            health.isInvincible = true;
-        }
+            if (shieldFX != null)
+            {
+                shieldFX.SetActive(false);
+                shieldFX.SetActive(true);
+                ParticleSystem ps = shieldFX.GetComponent<ParticleSystem>();
+                if (ps != null) ps.Play(); // Ép xịt hạt
+            }
 
-        yield return new WaitForSeconds(3f);
+            h.isInvincible = true; // Bật chế độ bất tử chặn sát thương
 
-        if (health != null)
-        {
-            // --- TẮT VFX KHIÊN ---
-            if (shieldParticles != null) shieldParticles.SetActive(false);
-            health.isInvincible = false;
+            yield return new WaitForSeconds(3f); // Đếm ngược 3 giây
+
+            h.isInvincible = false; // Tắt bất tử
+            if (shieldFX != null) shieldFX.SetActive(false);
         }
     }
+
+    // ==========================================
+    // CÁC HÀM QUẢN LÝ TIỀN VÀ MUA HÀNG
+    // ==========================================
 
     public void AddCoins(int amount)
     {
@@ -163,39 +193,45 @@ public class PlayerStats : MonoBehaviour
 
     void UpdateCoinUI()
     {
-        if (UIManager.Instance != null) UIManager.Instance.UpdateCoinText(currentCoins);
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateCoinText(currentCoins);
+        }
     }
 
-    public bool TryBuyItem(ItemData itemData)
+    public bool TryBuyItem(ItemData data)
     {
-        if (SpendCoins(itemData.cost))
+        if (currentCoins >= data.cost)
         {
-            inventory[itemData.type]++;
-            int slotIndex = GetSlotIndex(itemData.type);
+            currentCoins -= data.cost;
+            inventory[data.type]++; // Bỏ đồ vào túi
 
+            UpdateCoinUI(); // Trừ tiền trên UI
+
+            // Cập nhật số lượng đồ lên 4 ô giao diện
+            int slotIndex = GetSlotIndex(data.type);
             if (UIManager.Instance != null)
-                UIManager.Instance.UpdateInventorySlot(slotIndex, itemData.itemIcon, inventory[itemData.type]);
+            {
+                UIManager.Instance.UpdateInventorySlot(slotIndex, data.itemIcon, inventory[data.type]);
+            }
 
-            if (GlobalAudioManager.Instance != null)
+            // Gọi tiếng Ting Ting mua thành công
+            if (GlobalAudioManager.Instance != null && GlobalAudioManager.Instance.buySuccessSound != null)
+            {
                 GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.buySuccessSound);
+            }
 
             return true;
         }
-
-        if (GlobalAudioManager.Instance != null)
-            GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.buyFailSound);
-
-        return false;
-    }
-
-    private int GetSlotIndex(ItemData.ItemType type)
-    {
-        switch (type)
+        else
         {
-            case ItemData.ItemType.Health: return 0;
-            case ItemData.ItemType.Speed: return 1;
-            case ItemData.ItemType.Shield: return 2;
-            default: return 3;
+            // Gọi tiếng Bíp Bíp hết tiền
+            if (GlobalAudioManager.Instance != null && GlobalAudioManager.Instance.buyFailSound != null)
+            {
+                GlobalAudioManager.Instance.PlaySFX(GlobalAudioManager.Instance.buyFailSound);
+            }
+
+            return false;
         }
     }
 
@@ -207,6 +243,17 @@ public class PlayerStats : MonoBehaviour
             case 1: return ItemData.ItemType.Speed;
             case 2: return ItemData.ItemType.Shield;
             default: return ItemData.ItemType.Health;
+        }
+    }
+
+    private int GetSlotIndex(ItemData.ItemType type)
+    {
+        switch (type)
+        {
+            case ItemData.ItemType.Health: return 0;
+            case ItemData.ItemType.Speed: return 1;
+            case ItemData.ItemType.Shield: return 2;
+            default: return 3;
         }
     }
 }

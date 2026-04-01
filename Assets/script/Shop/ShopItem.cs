@@ -2,33 +2,62 @@
 
 public class ShopItem : MonoBehaviour
 {
-    // Cậu chỉ cần kéo file Data (ví dụ: file LoHoiMau) từ cửa sổ Project vào đây!
+    // Kéo file Data (ví dụ: file LoHoiMau) từ cửa sổ Project vào đây!
+    [Header("Item Info")]
     public ItemData itemData;
 
     private bool isPlayerInRange = false;
+    private bool isSold = false; // Trạng thái kiểm tra xem món đồ đã bị mua chưa
 
     void Update()
     {
-        if (isPlayerInRange && Input.GetKeyDown(KeyCode.E))
+        // Thêm điều kiện !isSold để không cho mua lại món đã bán
+        if (isPlayerInRange && !isSold && Input.GetKeyDown(KeyCode.E))
         {
-            ShopManager.Instance.TryBuyItem(itemData);
+            AttemptPurchase();
         }
     }
 
     void OnMouseDown()
     {
-        if (isPlayerInRange)
+        if (isPlayerInRange && !isSold)
         {
-            ShopManager.Instance.TryBuyItem(itemData);
+            AttemptPurchase();
+        }
+    }
+
+    // Tách riêng logic mua hàng ra một hàm để dùng chung cho cả phím E và Chuột
+    private void AttemptPurchase()
+    {
+        // Cập nhật hàm TryBuyItem bên ShopManager để trả về true/false
+        // true = Đủ tiền & Túi đồ còn chỗ trống -> Mua thành công
+        bool success = ShopManager.Instance.TryBuyItem(itemData);
+
+        if (success)
+        {
+            isSold = true;
+            isPlayerInRange = false; // Reset trạng thái để không lỗi bảng UI
+
+            // Cập nhật bảng thông báo báo hết hàng
+            ShopManager.Instance.UpdateBoard("SOLD OUT!");
+
+            // Tắt hình ảnh món đồ trên quầy (ẩn đi thay vì Destroy để tránh lỗi Missing Reference)
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            // Báo lỗi nếu không đủ tiền hoặc túi đầy
+            ShopManager.Instance.UpdateBoard("INVENTORY FULL / NO COINS!");
         }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && !isSold)
         {
             isPlayerInRange = true;
-            ShopManager.Instance.UpdateBoard("Press [ E ] to buy");
+            // Bạn có thể lấy giá tiền từ itemData để hiển thị lên bảng luôn cho trực quan
+            ShopManager.Instance.UpdateBoard("Press [ E ] to buy - " + itemData.price + "G");
         }
     }
 
@@ -37,7 +66,11 @@ public class ShopItem : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = false;
-            ShopManager.Instance.UpdateBoard("WELCOME :3");
+            // Chỉ trả về WELCOME nếu đồ chưa bị mua
+            if (!isSold)
+            {
+                ShopManager.Instance.UpdateBoard("WELCOME :3");
+            }
         }
     }
 }

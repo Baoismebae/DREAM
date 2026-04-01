@@ -227,12 +227,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
   patrolPoints:
-  - {x: -0.7470932, y: -1.0016942}
-  - {x: 5.184376, y: -1.1620102}
-  - {x: 5.201618, y: 1.5817463}
-  - {x: -2.7068176, y: 1.6676254}
-  - {x: -2.7857437, y: 0.45259905}
-  - {x: -0.7964325, y: 0.44668818}
+  - {x: -0.9521551, y: -1.2751112}
+  - {x: 1.1970377, y: -1.2759342}
+  - {x: 1.1914961, y: 2.9032621}
+  - {x: -1.2485914, y: 2.3511677}
   moveSpeed: 2
   stopDistance: 4.1
   shootingRange: 4.74
@@ -242,7 +240,7 @@ MonoBehaviour:
   detectionRange: 6.27
   bullet: {fileID: 3685909861142717615, guid: 45144937bf8afc44f8640de392efb024, type: 3}
   bulletParent: {fileID: 2310655025901064555}
-  player: {fileID: 3091582388991526769, guid: f48ba878eb5c6454e93fbc9d821a579b, type: 3}
+  player: {fileID: 0}
   healthSlider: {fileID: 8424094099567628512}
   maxHealth: 50
   coinPrefab: {fileID: 7969977241795108594, guid: 59f114a5049f7ff4492a8f7d8d18ed36, type: 3}

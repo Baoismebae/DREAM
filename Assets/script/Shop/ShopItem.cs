@@ -41,13 +41,13 @@ public class ShopItem : MonoBehaviour
         if (success)
         {
             // Mua thành công -> Hiện chữ báo cáo
-            ShopManager.Instance.UpdateBoard("BOUGHT " + itemData.itemName + ":)");
+            ShopManager.Instance.UpdateBoard("BOUGHT " + itemData.itemName + " :)");
             // Đã bỏ lệnh Destroy để đồ không bị mất khỏi bàn
         }
         else
         {
             // Tiền không đủ hoặc túi đầy
-            ShopManager.Instance.UpdateBoard("NOT ENOUGH COINS!");
+            ShopManager.Instance.UpdateBoard("NOT ENOUGH COINS :(");
         }
     }
 
@@ -59,7 +59,7 @@ public class ShopItem : MonoBehaviour
             isPlayerInRange = true;
             if (ShopManager.Instance != null && itemData != null)
             {
-                ShopManager.Instance.UpdateBoard("Press [ E ] to buy " + itemData.cost);
+                ShopManager.Instance.UpdateBoard("Press [ E ] to buy ");
             }
         }
     }

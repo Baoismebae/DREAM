@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Unity.Cinemachine;
 
 public class Playermovement : MonoBehaviour
 {
     [Header("DI CHUYỂN")]
     public float Speed = 5f;
-    // --- ĐỔI THÀNH PUBLIC ĐỂ ITEM TĂNG TỐC CAN THIỆP ĐƯỢC ---
     [HideInInspector] public float currentSpeed;
 
     [Header("CẦU THANG NGANG")]
@@ -25,6 +26,53 @@ public class Playermovement : MonoBehaviour
     private float footstepTimer = 0f;
     public float footstepDelay = 1f;
 
+    public bool isSleeping = false;
+
+    void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
+    void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "SokobanScene") 
+        {
+            isSleeping = true; 
+            
+            GetComponent<SpriteRenderer>().enabled = false;
+            GetComponent<Collider2D>().enabled = false;
+            rb.linearVelocity = Vector2.zero; 
+
+            PlayerAttack attackScript = GetComponent<PlayerAttack>();
+            if (attackScript != null)
+            {
+                attackScript.enabled = false;
+                if (attackScript.wandTransform != null) attackScript.wandTransform.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            isSleeping = false;
+            
+            GetComponent<SpriteRenderer>().enabled = true;
+            GetComponent<Collider2D>().enabled = true;
+            
+            PlayerAttack attackScript = GetComponent<PlayerAttack>();
+            if (attackScript != null) attackScript.enabled = true;
+
+            GameObject spawnPoint = GameObject.Find("SpawnPoint");
+            if (spawnPoint != null)
+            {
+                transform.position = spawnPoint.transform.position;
+            }
+
+            CinemachineCamera[] allVcams = FindObjectsByType<CinemachineCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            
+            foreach (var vcam in allVcams)
+            {
+                vcam.Follow = this.transform;
+            }
+        }
+    }
+
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -38,6 +86,8 @@ public class Playermovement : MonoBehaviour
 
     void Update()
     {
+        if (isSleeping) return;
+
         if (isAttacking)
         {
             movement = Vector2.zero;
@@ -69,11 +119,6 @@ public class Playermovement : MonoBehaviour
             sr.flipX = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Debug.Log("Tọa độ X khi vừa đổi hướng: " + transform.position.x);
-        }
-
         bool isMoving = (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0 || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0);
 
         if (isMoving)
@@ -98,6 +143,7 @@ public class Playermovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isSleeping) return;
         if (isAttacking) return;
 
         if (movement.sqrMagnitude > 0.01f)

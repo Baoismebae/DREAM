@@ -12,32 +12,29 @@ public class PlayerStats : MonoBehaviour
     [Header("TÚI ĐỒ (INVENTORY)")]
     public Dictionary<ItemData.ItemType, int> inventory = new Dictionary<ItemData.ItemType, int>();
 
+    // --- ĐOẠN MỚI: CHỖ ĐỂ KÉO EFFECTS VÀO ---
+    [Header("HIỆU ỨNG HẠT (VFX)")]
+    public GameObject healParticles;  // Kéo object HealFX vào đây
+    public GameObject speedParticles; // Kéo object SpeedFX vào đây
+    public GameObject shieldParticles;// Kéo object ShieldFX vào đây
+    // --------------------------------------
+
     void Awake()
     {
-        // THẦN CHÚ GIỮ DỮ LIỆU QUA CÁC MAP
-        if (instance == null)
-        {
-            instance = this;
-
-            // Giữ lại nhân vật và toàn bộ chỉ số này khi qua map mới
-            DontDestroyOnLoad(gameObject);
-
-            // Chỉ khởi tạo túi đồ 1 lần duy nhất khi mới mở game
-            inventory[ItemData.ItemType.Health] = 0;
-            inventory[ItemData.ItemType.Speed] = 0;
-            inventory[ItemData.ItemType.Shield] = 0;
-        }
-        else
-        {
-            // Nếu qua Map 2 mà thấy có một con Player "mới" ở đó, hãy xóa nó đi
-            // Để giữ lại con Player "cũ" mang theo tiền từ Map 1 sang
-            Destroy(gameObject);
-        }
+        instance = this;
+        inventory[ItemData.ItemType.Health] = 0;
+        inventory[ItemData.ItemType.Speed] = 0;
+        inventory[ItemData.ItemType.Shield] = 0;
     }
 
     void Start()
     {
         UpdateCoinUI();
+
+        // Đảm bảo lúc đầu game các hiệu ứng đều tắt
+        if (healParticles != null) healParticles.SetActive(false);
+        if (speedParticles != null) speedParticles.SetActive(false);
+        if (shieldParticles != null) shieldParticles.SetActive(false);
     }
 
     void Update()
@@ -73,8 +70,15 @@ public class PlayerStats : MonoBehaviour
         {
             case ItemData.ItemType.Health:
                 Debug.Log("Ực ực... Đã dùng LỌ HỒI MÁU!");
-                // Hồi 30 máu (Cậu có thể sửa số 30 tùy ý)
                 GetComponent<Health>().Heal(30f);
+
+                // --- BẬT VFX HỒI MÁU ---
+                if (healParticles != null)
+                {
+                    healParticles.SetActive(true);
+                    // Hồi máu chỉ là 1 cú nổ, nên tắt nó sau 1.5 giây
+                    Invoke("StopHealVFX", 1.5f);
+                }
                 break;
 
             case ItemData.ItemType.Speed:
@@ -89,20 +93,32 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
+    // Hàm phụ trợ để tắt hiệu ứng hồi máu
+    private void StopHealVFX()
+    {
+        if (healParticles != null) healParticles.SetActive(false);
+    }
+
     private IEnumerator SpeedBoostCoroutine()
     {
         Playermovement pm = GetComponent<Playermovement>();
         if (pm != null)
         {
-            pm.Speed *= 1.5f; // Tăng gấp rưỡi tốc độ
+            // --- BẬT VFX TỐC ĐỘ ---
+            if (speedParticles != null) speedParticles.SetActive(true);
+
+            pm.Speed *= 1.5f;
             pm.currentSpeed = pm.Speed;
         }
 
-        yield return new WaitForSeconds(5f); // Chạy nhanh trong 5 giây
+        yield return new WaitForSeconds(5f);
 
         if (pm != null)
         {
-            pm.Speed /= 1.5f; // Trả lại bình thường
+            // --- TẮT VFX TỐC ĐỘ ---
+            if (speedParticles != null) speedParticles.SetActive(false);
+
+            pm.Speed /= 1.5f;
             pm.currentSpeed = pm.Speed;
         }
     }
@@ -111,11 +127,21 @@ public class PlayerStats : MonoBehaviour
     {
         Health health = GetComponent<Health>();
 
-        if (health != null) health.isInvincible = true; // Bật bất tử
+        if (health != null)
+        {
+            // --- BẬT VFX KHIÊN ---
+            if (shieldParticles != null) shieldParticles.SetActive(true);
+            health.isInvincible = true;
+        }
 
-        yield return new WaitForSeconds(3f); // Bất tử trong 3 giây
+        yield return new WaitForSeconds(3f);
 
-        if (health != null) health.isInvincible = false; // Tắt bất tử
+        if (health != null)
+        {
+            // --- TẮT VFX KHIÊN ---
+            if (shieldParticles != null) shieldParticles.SetActive(false);
+            health.isInvincible = false;
+        }
     }
 
     public void AddCoins(int amount)

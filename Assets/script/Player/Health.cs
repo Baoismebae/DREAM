@@ -11,7 +11,7 @@ public class Health : MonoBehaviour
     private Animator anim;
     private bool isDead = false;
 
-    // --- THÊM BIẾN NÀY ĐỂ BẬT KHIÊN ---
+    // BIẾN NÀY ĐỂ BẬT KHIÊN
     [HideInInspector] public bool isInvincible = false;
 
     public MonoBehaviour playerMovementScript;
@@ -43,7 +43,7 @@ public class Health : MonoBehaviour
         }
     }
 
-    // --- THÊM HÀM NÀY ĐỂ UỐNG THUỐC HỒI MÁU ---
+    // HÀM NÀY ĐỂ UỐNG THUỐC HỒI MÁU
     public void Heal(float amount)
     {
         if (isDead) return;
